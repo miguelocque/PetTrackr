@@ -1,6 +1,8 @@
 package com.PetTrackr.PetTrackr.entity;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
@@ -12,6 +14,12 @@ import jakarta.persistence.Entity;
 
 @Entity
 public class Pet {
+    // weightType enum  
+    public enum WeightType {
+        KG,
+        LBS
+    }
+
     // attributes
 
     // primary key will be an ID
@@ -34,11 +42,29 @@ public class Pet {
     @Column(nullable = false)
     private int age;
 
+    // weight
+    @Column(nullable = false)
+    private double weight;
+
+    @Column(nullable = false)
+    private WeightType weightType;
+
     @Column(nullable = false)
     private LocalDate dateOfBirth;
 
     @Column(nullable = true)
     private String photoURL; // optional photo of the pet
+
+    // medication - list of medications
+    @Column(nullable = true)
+    private List<Medication> medications = new ArrayList<>();
+
+    // feeding schedule - list of feeding times
+    @Column(nullable = false)
+    private List<FeedingSchedule> feedingSchedule = new ArrayList<>();
+
+
+    // vet appointments (list of appointments)
 
     @ManyToOne
     @JoinColumn(name = "ownerId", insertable = false, updatable = false, nullable = false)
