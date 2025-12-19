@@ -1,0 +1,41 @@
+# ========================
+# Build output
+# ========================
+/target/
+build/
+
+# ========================
+# IDE files
+# ========================
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# ========================
+# OS files
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# Logs
+# ========================
+*.log
+
+# ========================
+# Environment / secrets
+# ========================
+.env
+.env.*
+application-local.yaml
+application-prod.yaml
+
+# ========================
+# H2 database files (if file-based later)
+# ========================
+*.mv.db
+*.trace.db
+
+
