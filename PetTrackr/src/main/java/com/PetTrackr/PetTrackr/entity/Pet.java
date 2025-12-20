@@ -9,8 +9,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.CascadeType;
 
 @Entity
 public class Pet {
@@ -26,9 +30,6 @@ public class Pet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
-    private Long ownerId; // foreign key reference to Owner
 
     @Column(nullable = false)
     private String name;
@@ -47,6 +48,7 @@ public class Pet {
     private double weight;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private WeightType weightType;
 
     @Column(nullable = false)
@@ -55,21 +57,21 @@ public class Pet {
     @Column(nullable = true)
     private String photoURL; // optional photo of the pet
 
-    // medication - list of medications
-    @Column(nullable = true)
+    // medication - list of medications - can be null if no medications
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Medication> medications = new ArrayList<>();
 
     // feeding schedule - list of feeding times
-    @Column(nullable = false)
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedingSchedule> feedingSchedule = new ArrayList<>();
 
     // vet appointments (list of appointments)
-    @Column(nullable = true)
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VetVisit> vetAppointments = new ArrayList<>();
 
     // reference to Owner - many-to-one relationship
     @ManyToOne
-    @JoinColumn(name = "ownerId", insertable = false, updatable = false, nullable = false)
+    @JoinColumn(name = "ownerId", nullable = false)
     private Owner owner;
 
     // constructors
@@ -77,8 +79,8 @@ public class Pet {
         // empty constructor for JPA
     }
 
-    public Pet(Long ownerId, String name, String type, String breed, int age, LocalDate dateOfBirth, String photoURL) {
-        this.ownerId = ownerId;
+    public Pet(Owner owner, String name, String type, String breed, int age, LocalDate dateOfBirth, String photoURL) {
+        this.owner = owner;
         this.name = name;
         this.type = type;
         this.breed = breed;
@@ -94,14 +96,6 @@ public class Pet {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public Long getOwnerId() {
-        return ownerId;
-    }
-
-    public void setOwnerId(Long ownerId) {
-        this.ownerId = ownerId;
     }
 
     public String getName() {
