@@ -1,7 +1,7 @@
 # ========================
 # Build output
 # ========================
-/target/
+target/
 build/
 
 # ========================
@@ -37,5 +37,9 @@ application-prod.yaml
 # ========================
 *.mv.db
 *.trace.db
+/data/
+
+# directory for uploaded files
+/uploads/ 
 
 
