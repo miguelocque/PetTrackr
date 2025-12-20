@@ -2,11 +2,13 @@ package com.PetTrackr.PetTrackr.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.EnumType;
 
 
 // an entity to represent a feeding schedule for a pet
@@ -34,6 +36,7 @@ public class FeedingSchedule {
     private double quantity; // e.g., 1.5
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private QuantityUnit quantityUnit; // e.g., "cups"
 
     @ManyToOne
