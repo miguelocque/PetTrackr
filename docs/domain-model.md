@@ -47,7 +47,7 @@ Focus on essential pet management features with clear relationships. Prioritize 
 
 **Notes:**
 - `photoUrl` will store the file path after image upload (UC-9)
-- QR code generation (UC-10) will encode pet ID + owner contact info
+- QR code generation will encode pet ID + owner contact info
 
 ---
 
