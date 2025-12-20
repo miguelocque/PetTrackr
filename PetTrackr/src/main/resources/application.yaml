@@ -1,3 +1,91 @@
 spring:
   application:
     name: PetTrackr
+  
+  # ============================================
+  # H2 DATABASE CONFIGURATION
+  # ============================================
+  datasource:
+    # File-based H2 database (data persists between restarts)
+    # Creates database files in ./data/pettrackr.mv.db
+    url: jdbc:h2:file:./data/pettrackr
+    
+    # H2 database driver
+    driver-class-name: org.h2.Driver
+    
+    # Default H2 credentials (no password needed for local dev)
+    username: sa
+    password: 
+  
+  # ============================================
+  # JPA / HIBERNATE CONFIGURATION
+  # ============================================
+  jpa:
+    # DDL strategy: "update" means Hibernate will:
+    # - Create tables if they don't exist
+    # - Add new columns if you add fields to entities
+    # - NEVER delete data or drop tables
+    # Alternative: "create" (drops/recreates tables on restart - USE FOR TESTING ONLY)
+    hibernate:
+      ddl-auto: update
+    
+    # Show SQL queries in console (helpful for debugging)
+    show-sql: true
+    
+    # Additional Hibernate properties
+    properties:
+      hibernate:
+        # Format SQL queries nicely in console (easier to read)
+        format_sql: true
+        
+        # Dialect tells Hibernate which SQL syntax to use (H2 in this case)
+        # Usually auto-detected, but explicit is better
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  # ============================================
+  # H2 WEB CONSOLE (for database inspection)
+  # ============================================
+  h2:
+    console:
+      # Enable web console at http://localhost:8080/h2-console
+      enabled: true
+      
+      # URL path for the console
+      path: /h2-console
+      
+      # Allow access from browser (needed for local development)
+      settings:
+        web-allow-others: false
+
+# ============================================
+# SERVER CONFIGURATION
+# ============================================
+server:
+  # Port where Spring Boot app runs
+  port: 8080
+  
+  # Error handling configuration
+  error:
+    # Include full error messages in responses (helpful for development)
+    # Set to "never" in production for security
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: on_param
+    include-exception: false
+
+# ============================================
+# LOGGING CONFIGURATION
+# ============================================
+logging:
+  level:
+    # Log level for your application code
+    com.PetTrackr.PetTrackr: DEBUG
+    
+    # Log level for Hibernate SQL queries (see what queries are running)
+    org.hibernate.SQL: DEBUG
+    
+    # Log level for Hibernate query parameters (see actual values used in queries)
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    
+    # Log level for Spring Framework
+    org.springframework.web: INFO
