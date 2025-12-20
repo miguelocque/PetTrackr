@@ -63,9 +63,11 @@ public class Pet {
     @Column(nullable = false)
     private List<FeedingSchedule> feedingSchedule = new ArrayList<>();
 
-
     // vet appointments (list of appointments)
+    @Column(nullable = true)
+    private List<VetVisit> vetAppointments = new ArrayList<>();
 
+    // reference to Owner - many-to-one relationship
     @ManyToOne
     @JoinColumn(name = "ownerId", insertable = false, updatable = false, nullable = false)
     private Owner owner;
@@ -158,4 +160,43 @@ public class Pet {
         this.owner = owner;
     }
     
+    public double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(double weight) {
+        this.weight = weight;
+    }
+
+    public WeightType getWeightType() {
+        return weightType;
+    }
+
+    public void setWeightType(WeightType weightType) {
+        this.weightType = weightType;
+    }
+
+    public List<Medication> getMedications() {
+        return medications;
+    }
+
+    public void setMedications(List<Medication> medications) {
+        this.medications = medications;
+    }
+
+    public List<FeedingSchedule> getFeedingSchedule() {
+        return feedingSchedule;
+    }
+
+    public void setFeedingSchedule(List<FeedingSchedule> feedingSchedule) {
+        this.feedingSchedule = feedingSchedule;
+    }
+
+    public List<VetVisit> getVetAppointments() {
+        return vetAppointments;
+    }
+
+    public void setVetAppointments(List<VetVisit> vetAppointments) {
+        this.vetAppointments = vetAppointments;
+    }
 }
