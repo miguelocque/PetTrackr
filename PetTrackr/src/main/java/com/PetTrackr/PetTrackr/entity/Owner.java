@@ -33,7 +33,6 @@ public class Owner {
     private String passwordHash;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Column(nullable = true)
     private List<Pet> pets = new ArrayList<>();
 
     // constructors
@@ -83,5 +82,17 @@ public class Owner {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public List<Pet> getPets() {
+        return pets;
+    }
+
+    public void setPets(List<Pet> pets) {
+        this.pets = pets;
     }
 }
