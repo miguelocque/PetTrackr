@@ -23,6 +23,12 @@ public class Pet {
         KG,
         LBS
     }
+    // activity level enum
+    public enum ActivityLevel {
+        LOW,
+        MEDIUM,
+        HIGH
+    }
 
     // attributes
 
@@ -56,6 +62,10 @@ public class Pet {
 
     @Column(nullable = true)
     private String photoURL; // optional photo of the pet
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ActivityLevel activityLevel; // optional activity level
 
     // medication - list of medications - can be null if no medications
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true)
