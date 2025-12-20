@@ -35,7 +35,7 @@ Focus on essential pet management features with clear relationships. Prioritize 
 - `weightType` (Enum: KG or LBS, not null)
 - `dateOfBirth` (LocalDate, not null)
 - `photoUrl` (String, nullable) - path to uploaded image
-- `activityLevel` (String, not null) - e.g., "Low", "Medium", "High"
+- `activityLevel` (Enum: LOW, MEDIUM, HIGH, not null)
 
 **Relationships:**
 - Many-to-One → `Owner` (each pet belongs to one owner)
