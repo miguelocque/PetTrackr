@@ -158,6 +158,141 @@ class PetServiceTest {
         });
     }
 
+    @Test
+    void testCreatePet_WithNullName_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.createPet(
+                1L, null, "Dog", "Golden Retriever",
+                3, 30.0, Pet.WeightType.KG,
+                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
+            );
+        });
+        assertEquals("Pet name cannot be empty", exception.getMessage());
+    }
+
+    @Test
+    void testCreatePet_WithBlankName_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.createPet(
+                1L, "   ", "Dog", "Golden Retriever",
+                3, 30.0, Pet.WeightType.KG,
+                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
+            );
+        });
+        assertEquals("Pet name cannot be empty", exception.getMessage());
+    }
+
+    @Test
+    void testCreatePet_WithNullType_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.createPet(
+                1L, "Max", null, "Golden Retriever",
+                3, 30.0, Pet.WeightType.KG,
+                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
+            );
+        });
+        assertEquals("Pet type cannot be empty", exception.getMessage());
+    }
+
+    @Test
+    void testCreatePet_WithBlankType_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.createPet(
+                1L, "Max", "   ", "Golden Retriever",
+                3, 30.0, Pet.WeightType.KG,
+                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
+            );
+        });
+        assertEquals("Pet type cannot be empty", exception.getMessage());
+    }
+
+    @Test
+    void testCreatePet_WithNullBreed_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.createPet(
+                1L, "Max", "Dog", null,
+                3, 30.0, Pet.WeightType.KG,
+                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
+            );
+        });
+        assertEquals("Pet breed cannot be empty", exception.getMessage());
+    }
+
+    @Test
+    void testCreatePet_WithBlankBreed_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.createPet(
+                1L, "Max", "Dog", "   ",
+                3, 30.0, Pet.WeightType.KG,
+                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
+            );
+        });
+        assertEquals("Pet breed cannot be empty", exception.getMessage());
+    }
+
+    @Test
+    void testCreatePet_WithNullDateOfBirth_Success() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+        when(petRepository.save(any(Pet.class))).thenAnswer(invocation -> {
+            Pet pet = invocation.getArgument(0);
+            pet.setId(1L);
+            return pet;
+        });
+
+        // Act
+        Pet result = petService.createPet(
+            1L, "Max", "Dog", "Golden Retriever",
+            3, 30.0, Pet.WeightType.KG,
+            null, Pet.ActivityLevel.HIGH
+        );
+
+        // Assert
+        assertNotNull(result);
+        assertNull(result.getDateOfBirth()); // DateOfBirth can be null
+        verify(petRepository).save(any(Pet.class));
+    }
+
+    @Test
+    void testCreatePet_WithNegativeWeight_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.createPet(
+                1L, "Max", "Dog", "Golden Retriever",
+                3, -5.0, Pet.WeightType.KG,
+                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
+            );
+        });
+        assertEquals("Pet weight must be greater than zero", exception.getMessage());
+    }
+
     // ========================================
     // UC-3: View All Owner's Pets Tests
     // ========================================
@@ -283,6 +418,269 @@ class PetServiceTest {
                 null, null, null, null
             );
         });
+    }
+
+    @Test
+    void testUpdatePet_WithOnlyName_UpdatesNameOnly() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+        String originalType = testPet.getType();
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            "New Name", null, null,
+            null, null, null, null
+        );
+
+        // Assert
+        assertEquals("New Name", testPet.getName());
+        assertEquals(originalType, testPet.getType()); // Type unchanged
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithOnlyType_UpdatesTypeOnly() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+        String originalName = testPet.getName();
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            null, "Cat", null,
+            null, null, null, null
+        );
+
+        // Assert
+        assertEquals(originalName, testPet.getName()); // Name unchanged
+        assertEquals("Cat", testPet.getType());
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithOnlyBreed_UpdatesBreedOnly() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+        String originalName = testPet.getName();
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            null, null, "Poodle",
+            null, null, null, null
+        );
+
+        // Assert
+        assertEquals(originalName, testPet.getName()); // Name unchanged
+        assertEquals("Poodle", testPet.getBreed());
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithBlankName_DoesNotUpdateName() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+        String originalName = testPet.getName();
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            "   ", null, null,
+            null, null, null, null
+        );
+
+        // Assert
+        assertEquals(originalName, testPet.getName()); // Name unchanged
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithBlankType_DoesNotUpdateType() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+        String originalType = testPet.getType();
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            null, "   ", null,
+            null, null, null, null
+        );
+
+        // Assert
+        assertEquals(originalType, testPet.getType()); // Type unchanged
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithBlankBreed_DoesNotUpdateBreed() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+        String originalBreed = testPet.getBreed();
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            null, null, "   ",
+            null, null, null, null
+        );
+
+        // Assert
+        assertEquals(originalBreed, testPet.getBreed()); // Breed unchanged
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithValidAge_UpdatesAge() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            null, null, null,
+            5, null, null, null
+        );
+
+        // Assert
+        assertEquals(5, testPet.getAge());
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithNegativeAge_ThrowsException() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.updatePet(
+                1L, 1L,
+                null, null, null,
+                -1, null, null, null
+            );
+        });
+        assertEquals("Age cannot be negative", exception.getMessage());
+        verify(petRepository, never()).save(any(Pet.class));
+    }
+
+    @Test
+    void testUpdatePet_WithValidWeight_UpdatesWeight() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            null, null, null,
+            null, 35.5, null, null
+        );
+
+        // Assert
+        assertEquals(35.5, testPet.getWeight());
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithZeroWeight_ThrowsException() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.updatePet(
+                1L, 1L,
+                null, null, null,
+                null, 0.0, null, null
+            );
+        });
+        assertEquals("Weight must be greater than zero", exception.getMessage());
+        verify(petRepository, never()).save(any(Pet.class));
+    }
+
+    @Test
+    void testUpdatePet_WithNegativeWeight_ThrowsException() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            petService.updatePet(
+                1L, 1L,
+                null, null, null,
+                null, -5.0, null, null
+            );
+        });
+        assertEquals("Weight must be greater than zero", exception.getMessage());
+        verify(petRepository, never()).save(any(Pet.class));
+    }
+
+    @Test
+    void testUpdatePet_WithWeightType_UpdatesWeightType() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            null, null, null,
+            null, null, Pet.WeightType.LBS, null
+        );
+
+        // Assert
+        assertEquals(Pet.WeightType.LBS, testPet.getWeightType());
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithActivityLevel_UpdatesActivityLevel() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            null, null, null,
+            null, null, null, Pet.ActivityLevel.HIGH
+        );
+
+        // Assert
+        assertEquals(Pet.ActivityLevel.HIGH, testPet.getActivityLevel());
+        verify(petRepository).save(testPet);
+    }
+
+    @Test
+    void testUpdatePet_WithAllNullValues_DoesNotChangeAnything() {
+        // Arrange
+        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
+        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+        String originalName = testPet.getName();
+        String originalType = testPet.getType();
+        String originalBreed = testPet.getBreed();
+
+        // Act
+        petService.updatePet(
+            1L, 1L,
+            null, null, null,
+            null, null, null, null
+        );
+
+        // Assert
+        assertEquals(originalName, testPet.getName());
+        assertEquals(originalType, testPet.getType());
+        assertEquals(originalBreed, testPet.getBreed());
+        verify(petRepository).save(testPet);
     }
 
     // ========================================
