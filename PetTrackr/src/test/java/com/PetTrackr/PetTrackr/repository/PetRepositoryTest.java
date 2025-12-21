@@ -29,7 +29,7 @@ public class PetRepositoryTest {
     void testFindByOwnerId_WithValidOwnerId_ReturnsPets() {
         // Arrange
         Owner owner = createAndSaveOwner("Owner1", "owner1@example.com");
-        Pet pet = createAndSavePet("Max", "Dog", owner);
+        createAndSavePet("Max", "Dog", owner);
 
         // Act
         List<Pet> pets = petRepository.findByOwnerId(owner.getId());
