@@ -45,6 +45,9 @@ public class OwnerService {
     public Owner registerOwner(String email, String name, String phoneNumber, String rawPassword) {
         // firstly validate the email to ensure no spaces and lowercase
         email = email != null ? email.trim().toLowerCase() : null;
+
+        // phone number trim
+        phoneNumber = phoneNumber != null ? phoneNumber.trim() : null;
         
         // Validate inputs
         if (email == null || email.isBlank()) {
