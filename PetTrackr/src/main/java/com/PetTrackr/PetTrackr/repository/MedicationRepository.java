@@ -12,7 +12,4 @@ public interface MedicationRepository extends JpaRepository<Medication, Long> {
 
     // for individual pet medications ordered by time to administer 
     List<Medication> findByPetIdOrderByTimeToAdministerAsc(Long petId);
-
-    // for all medications by owner's pets
-    List<Medication> findAllMedicationsForOwner(Long ownerId);
 }

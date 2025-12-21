@@ -10,6 +10,4 @@ public interface FeedingScheduleRepository extends JpaRepository<FeedingSchedule
     // for individual pet feeding schedules
     List<FeedingSchedule> findByPetId(Long petId);
 
-    // for all feeding schedules by owner's pets
-    List<FeedingSchedule> findAllFeedingSchedulesForOwner(Long ownerId);
 }
