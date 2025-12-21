@@ -20,6 +20,10 @@ public class OwnerService {
     // Email regex pattern for validation
     private static final String EMAIL_PATTERN = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
     private static final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+
+    // phone number regex pattern for validation (optional enhancement)
+    private static final String PHONE_PATTERN = "^(\\+\\d{1,3}[- ]?)?\\d{10}$";
+    private static final Pattern phonePattern = Pattern.compile(PHONE_PATTERN);
     
     // constructor injection
     public OwnerService(OwnerRepository ownerRepository, BCryptPasswordEncoder passwordEncoder) {
@@ -31,15 +35,29 @@ public class OwnerService {
     private boolean isValidEmail(String email) {
         return email != null && pattern.matcher(email).matches();
     }
+
+    // helper method to validate phone number format (optional enhancement)
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        return phoneNumber != null && phonePattern.matcher(phoneNumber).matches();
+    }
     
     // registers a new owner
     public Owner registerOwner(String email, String name, String phoneNumber, String rawPassword) {
+        // firstly validate the email to ensure no spaces and lowercase
+        email = email != null ? email.trim().toLowerCase() : null;
+        
         // Validate inputs
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email cannot be empty");
         }
         if (!isValidEmail(email)) {
             throw new IllegalArgumentException("Email format is invalid");
+        }
+        if (phoneNumber == null || phoneNumber.isBlank()) {
+            throw new IllegalArgumentException("Phone number cannot be empty");
+        }
+        if (!isValidPhoneNumber(phoneNumber)) {
+            throw new IllegalArgumentException("Phone number format is invalid");
         }
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Name cannot be empty");
