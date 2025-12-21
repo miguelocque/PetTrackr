@@ -203,4 +203,12 @@ public class Pet {
     public void setVetAppointments(List<VetVisit> vetAppointments) {
         this.vetAppointments = vetAppointments;
     }
+
+    public ActivityLevel getActivityLevel() {
+        return activityLevel;
+    }
+
+    public void setActivityLevel(ActivityLevel activityLevel) {
+        this.activityLevel = activityLevel;
+    }
 }

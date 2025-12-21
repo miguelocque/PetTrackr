@@ -1,5 +1,7 @@
 package com.PetTrackr.PetTrackr.entity;
 
+import java.time.LocalTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
@@ -19,7 +21,8 @@ public class FeedingSchedule {
     public enum QuantityUnit {
         CUPS,
         GRAMS,
-        OUNCES
+        OUNCES,
+        CANS
     }
     // attributes
     @Id
@@ -27,7 +30,7 @@ public class FeedingSchedule {
     private Long id;
 
     @Column(nullable = false)
-    private String time; // e.g., "08:00 AM"
+    private LocalTime time; // e.g., "08:00 AM"
 
     @Column(nullable = false)
     private String foodType; // e.g., "Dry Kibble"
@@ -48,7 +51,7 @@ public class FeedingSchedule {
         // empty constructor for JPA
     }
 
-    public FeedingSchedule(String time, String foodType, double quantity, QuantityUnit quantityUnit) {
+    public FeedingSchedule(LocalTime time, String foodType, double quantity, QuantityUnit quantityUnit) {
         this.time = time;
         this.foodType = foodType;
         this.quantity = quantity;
@@ -64,11 +67,11 @@ public class FeedingSchedule {
         this.id = id;
     }
 
-    public String getTime() {
+    public LocalTime getTime() {
         return time;
     }
 
-    public void setTime(String time) {
+    public void setTime(LocalTime time) {
         this.time = time;
     }
 
