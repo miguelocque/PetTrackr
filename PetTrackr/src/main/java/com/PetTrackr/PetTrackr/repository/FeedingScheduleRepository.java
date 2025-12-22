@@ -7,7 +7,7 @@ import java.util.List;
 
 @Repository
 public interface FeedingScheduleRepository extends JpaRepository<FeedingSchedule, Long> {
-    // for individual pet feeding schedules
-    List<FeedingSchedule> findByPetId(Long petId);
+    // for individual pet feeding schedules sorted by time
+    List<FeedingSchedule> findByPetIdOrderByTimeAsc(Long petId);
 
 }
