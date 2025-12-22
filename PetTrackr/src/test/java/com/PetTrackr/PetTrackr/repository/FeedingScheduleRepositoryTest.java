@@ -37,7 +37,7 @@ public class FeedingScheduleRepositoryTest {
         createAndSaveFeedingSchedule(LocalTime.of(9, 0), "Kibble", pet);
 
         // Act
-        List<FeedingSchedule> schedules = feedingScheduleRepository.findByPetId(pet.getId());
+        List<FeedingSchedule> schedules = feedingScheduleRepository.findByPetIdOrderByTimeAsc(pet.getId());
 
         // Assert
         assertEquals(1, schedules.size());
@@ -47,7 +47,7 @@ public class FeedingScheduleRepositoryTest {
     @Test
     void testFindByPetId_WithInvalidPetId_ReturnsEmpty() {
         // Act
-        List<FeedingSchedule> schedules = feedingScheduleRepository.findByPetId(999L);
+        List<FeedingSchedule> schedules = feedingScheduleRepository.findByPetIdOrderByTimeAsc(999L);
 
         // Assert
         assertTrue(schedules.isEmpty());
@@ -62,7 +62,7 @@ public class FeedingScheduleRepositoryTest {
         createAndSaveFeedingSchedule(LocalTime.of(14, 0), "Wet Food", pet);
 
         // Act
-        List<FeedingSchedule> schedules = feedingScheduleRepository.findByPetId(pet.getId());
+        List<FeedingSchedule> schedules = feedingScheduleRepository.findByPetIdOrderByTimeAsc(pet.getId());
 
         // Assert
         assertEquals(3, schedules.size());
