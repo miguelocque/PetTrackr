@@ -9,4 +9,7 @@ import java.util.List;
 public interface VetVisitRepository extends JpaRepository<VetVisit, Long> {
     // Custom query method to find vet visits by the pet's ID
     List<VetVisit> findByPetId(Long petId);
+
+    // Return vet visits sorted chronologically by visitDate
+    List<VetVisit> findByPetIdOrderByVisitDateAsc(Long petId);
 }
