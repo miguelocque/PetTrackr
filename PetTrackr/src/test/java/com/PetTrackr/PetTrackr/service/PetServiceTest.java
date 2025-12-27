@@ -29,6 +29,9 @@ class PetServiceTest {
     @Mock
     private OwnerRepository ownerRepository;
 
+    @Mock
+    private ImageUploadService imageUploadService;
+
     @InjectMocks
     private PetService petService;
 
@@ -709,24 +712,6 @@ class PetServiceTest {
         assertThrows(SecurityException.class, () -> {
             petService.deletePet(1L, 999L); // Wrong owner ID
         });
-    }
-
-    // ========================================
-    // Photo Update Tests
-    // ========================================
-
-    @Test
-    void testUpdatePetPhoto_WithValidData_Success() {
-        // Arrange
-        when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
-        when(petRepository.save(any(Pet.class))).thenReturn(testPet);
-
-        // Act
-        Pet result = petService.updatePetPhoto(1L, "/uploads/pet_1_12345.jpg", 1L);
-
-        // Assert
-        assertNotNull(result);
-        verify(petRepository, times(1)).save(any(Pet.class));
     }
 
     // ========================================

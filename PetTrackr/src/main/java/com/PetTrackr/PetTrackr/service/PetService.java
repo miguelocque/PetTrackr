@@ -11,6 +11,7 @@ import com.PetTrackr.PetTrackr.repository.PetRepository;
 
 import jakarta.transaction.Transactional;
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 
 @Service
@@ -18,11 +19,13 @@ import java.util.List;
 public class PetService {
     private final PetRepository petRepository;
     private final OwnerRepository ownerRepository;
+    private final ImageUploadService imageUploadService;
 
     // Constructor injection
-    public PetService(PetRepository petRepository, OwnerRepository ownerRepository) {
+    public PetService(PetRepository petRepository, OwnerRepository ownerRepository, ImageUploadService imageUploadService) {
         this.petRepository = petRepository;
         this.ownerRepository = ownerRepository;
+        this.imageUploadService = imageUploadService;
     }
 
     // Creates a new pet profile for the given owner -- Implements Use Case-2
@@ -164,16 +167,21 @@ public class PetService {
 
 
     // Update pet photo URL after image upload -- Implements Use Case-5
-    public Pet updatePetPhoto(Long petId, String photoUrl, Long requestingOwnerId) {
-        // Get pet with authorization check
+    public Pet updatePetPhoto(Long petId, Long requestingOwnerId, MultipartFile photoFile) {
+   
+        // Fetch pet and authorize
         Pet pet = getPetById(petId, requestingOwnerId);
-
-        // update the new photo URL path
-        pet.setPhotoURL(photoUrl);
-
-        // Save and return updated pet
+    
+        // Upload image via ImageUploadService
+        String filename = imageUploadService.uploadPetImage(petId, requestingOwnerId, photoFile);
+    
+        // Update pet with filename
+        pet.setPhotoURL(filename);
+    
+        // Save and return
         return petRepository.save(pet);
     }
+    
 
 
     // helper method to check if a pet belongs to an owner
