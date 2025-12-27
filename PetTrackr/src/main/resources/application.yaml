@@ -3,6 +3,14 @@ spring:
     name: PetTrackr
   
   # ============================================
+  # FILE UPLOAD CONFIGURATION
+  # ============================================
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
+  
+  # ============================================
   # H2 DATABASE CONFIGURATION
   # ============================================
   datasource:
@@ -89,3 +97,9 @@ logging:
     
     # Log level for Spring Framework
     org.springframework.web: INFO
+
+# ============================================
+# FILE UPLOAD DIRECTORY
+# ============================================
+file:
+  upload-dir: ./uploads/pet-images
