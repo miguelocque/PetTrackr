@@ -24,7 +24,7 @@ public class VetVisitService {
         this.vetVisitRepository = vetVisitRepository;
     }
 
-    public VetVisit addVetVisitToPet(Long petId, Long requestingOwnerId, LocalDate visitDate, String reason,
+    public VetVisit addVetVisitToPet(Long petId, Long requestingOwnerId, LocalDate visitDate, LocalDate nextVisitDate, String reason,
                                     String vetName, String notes) {
 
         // verifies the pet exists and belongs to the requesting owner
@@ -48,6 +48,7 @@ public class VetVisitService {
 
         VetVisit vetVisit = new VetVisit();
         vetVisit.setPet(pet);
+        vetVisit.setNextVisitDate(nextVisitDate); // can be null
         vetVisit.setVisitDate(visitDate);
         vetVisit.setReasonForVisit(reason);
         vetVisit.setVetName(vetName);
@@ -56,7 +57,7 @@ public class VetVisitService {
     }
 
     // update method for vet visit
-    public VetVisit updateVetVisit(Long vetVisitId, Long requestingOwnerId, LocalDate visitDate, String reason,
+    public VetVisit updateVetVisit(Long vetVisitId, Long requestingOwnerId, LocalDate visitDate, LocalDate nextVisitDate, String reason,
                                     String vetName, String notes) {
         // Fetch vet visit once
         VetVisit vetVisit = vetVisitRepository.findById(vetVisitId)
@@ -85,6 +86,9 @@ public class VetVisitService {
         }
         if (visitDate != null) {
             vetVisit.setVisitDate(visitDate);
+        }
+        if (nextVisitDate != null) {
+            vetVisit.setNextVisitDate(nextVisitDate);
         }
         if (notes != null) {
             vetVisit.setNotes(notes);
