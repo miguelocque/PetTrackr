@@ -102,7 +102,7 @@ public class OwnerService {
     }
     
     // updates an owner's profile with a new name and phone number, no other fields
-    public Owner updateOwnerProfile(Long id, String name, String phoneNumber) {
+    public Owner updateOwnerProfile(Long id, String name, String phoneNumber, String email) {
         Owner owner = getOwnerById(id);
         
         if (name != null && !name.isBlank()) {
@@ -110,6 +110,19 @@ public class OwnerService {
         }
         if (phoneNumber != null && !phoneNumber.isBlank()) {
             owner.setPhoneNumber(phoneNumber);
+        }
+        if (email != null && !email.isBlank()) {
+            // Validate and normalize email
+            email = email.trim().toLowerCase();
+            if (!isValidEmail(email)) {
+                throw new IllegalArgumentException("Email format is invalid");
+            }
+            // Check for email uniqueness if changed
+            if (!email.equals(owner.getEmail()) && ownerRepository.existsByEmail(email)) {
+                throw new IllegalArgumentException("Email already registered");
+            }
+            // if here, email is valid and unique
+            owner.setEmail(email);
         }
         
         return ownerRepository.save(owner);

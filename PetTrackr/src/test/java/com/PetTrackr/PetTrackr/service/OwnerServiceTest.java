@@ -304,7 +304,7 @@ public class OwnerServiceTest {
         when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
 
         // Act
-        Owner result = ownerService.updateOwnerProfile(1L, "Jane Doe", "5555555555");
+        Owner result = ownerService.updateOwnerProfile(1L, "Jane Doe", "5555555555", null);
 
         // Assert
         assertNotNull(result);
@@ -322,7 +322,7 @@ public class OwnerServiceTest {
         when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
 
         // Act
-        Owner result = ownerService.updateOwnerProfile(1L, "Jane Doe", null);
+        Owner result = ownerService.updateOwnerProfile(1L, "Jane Doe", null, null);
 
         // Assert
         assertNotNull(result);
@@ -340,7 +340,7 @@ public class OwnerServiceTest {
         when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
 
         // Act
-        Owner result = ownerService.updateOwnerProfile(1L, null, "5555555555");
+        Owner result = ownerService.updateOwnerProfile(1L, null, "5555555555", null);
 
         // Assert
         assertNotNull(result);
@@ -358,7 +358,7 @@ public class OwnerServiceTest {
         when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
 
         // Act
-        ownerService.updateOwnerProfile(1L, "   ", "5555555555");
+        ownerService.updateOwnerProfile(1L, "   ", "5555555555", null);
 
         // Assert
         assertEquals(originalName, testOwner.getName()); // Name unchanged
@@ -373,7 +373,7 @@ public class OwnerServiceTest {
         when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
 
         // Act
-        ownerService.updateOwnerProfile(1L, "Jane Doe", "   ");
+        ownerService.updateOwnerProfile(1L, "Jane Doe", "   ", null);
 
         // Assert
         assertEquals("Jane Doe", testOwner.getName());
@@ -387,7 +387,7 @@ public class OwnerServiceTest {
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            ownerService.updateOwnerProfile(999L, "Jane", "5555555555");
+            ownerService.updateOwnerProfile(999L, "Jane", "5555555555", null);
         });
         assertEquals("Owner not found with ID: 999", exception.getMessage());
         verify(ownerRepository).findById(999L);
