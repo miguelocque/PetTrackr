@@ -30,7 +30,7 @@ public class PetService {
 
     // Creates a new pet profile for the given owner -- Implements Use Case-2
     public Pet createPet(Long ownerId, String name, String type, String breed, 
-                        int age, double weight, Pet.WeightType weightType,
+                        double weight, Pet.WeightType weightType,
                         LocalDate dateOfBirth, Pet.ActivityLevel activityLevel) {
         
         // Validate the owner exists
@@ -49,9 +49,6 @@ public class PetService {
         }
         
         // Validate the numeric fields
-        if (age < 0) {
-            throw new IllegalArgumentException("Pet age cannot be negative");
-        }
         if (weight <= 0) {
             throw new IllegalArgumentException("Pet weight must be greater than zero");
         }
@@ -74,7 +71,7 @@ public class PetService {
         pet.setName(name);
         pet.setType(type);
         pet.setBreed(breed);
-        pet.setAge(age);
+        pet.setAge(calculateAge(dateOfBirth)); // Calculate age from date of birth
         pet.setWeight(weight);
         pet.setWeightType(weightType);
         pet.setDateOfBirth(dateOfBirth);
@@ -117,7 +114,7 @@ public class PetService {
     // Update an existing pet's profile -- not specified in use cases but necessary for completeness
     public Pet updatePet(Long petId, Long requestingOwnerId,
                         String name, String type, String breed,
-                        Integer age, Double weight, Pet.WeightType weightType,
+                        LocalDate dateOfBirth, Double weight, Pet.WeightType weightType,
                         Pet.ActivityLevel activityLevel) {
         
         // Get pet with authorization check
@@ -133,11 +130,12 @@ public class PetService {
         if (breed != null && !breed.isBlank()) {
             pet.setBreed(breed);
         }
-        if (age != null) {
-            if (age < 0) {
-                throw new IllegalArgumentException("Age cannot be negative");
+        if (dateOfBirth != null) {
+            if (dateOfBirth.isAfter(LocalDate.now())) {
+                throw new IllegalArgumentException("Date of birth cannot be in the future");
             }
-            pet.setAge(age);
+            pet.setDateOfBirth(dateOfBirth);
+            pet.setAge(calculateAge(dateOfBirth)); // Recalculate age when date of birth changes
         }
         if (weight != null) {
             if (weight <= 0) {
@@ -190,6 +188,14 @@ public class PetService {
         return petRepository.findById(petId)
             .map(pet -> pet.getOwner().getId().equals(ownerId))
             .orElse(false);
+    }
+
+    // Helper method to calculate age from date of birth
+    private int calculateAge(LocalDate dateOfBirth) {
+        if (dateOfBirth == null) {
+            return 0;
+        }
+        return java.time.Period.between(dateOfBirth, LocalDate.now()).getYears();
     }
 
 }

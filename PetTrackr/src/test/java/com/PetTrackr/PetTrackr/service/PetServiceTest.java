@@ -75,7 +75,7 @@ class PetServiceTest {
         // Act
         Pet result = petService.createPet(
             1L, "Max", "Dog", "Golden Retriever",
-            3, 30.0, Pet.WeightType.KG,
+            30.0, Pet.WeightType.KG,
             LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
         );
 
@@ -95,7 +95,7 @@ class PetServiceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 999L, "Max", "Dog", "Golden Retriever",
-                3, 30.0, Pet.WeightType.KG,
+                30.0, Pet.WeightType.KG,
                 LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
@@ -110,37 +110,7 @@ class PetServiceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 1L, "", "Dog", "Golden Retriever",
-                3, 30.0, Pet.WeightType.KG,
-                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
-            );
-        });
-    }
-
-    @Test
-    void testCreatePet_WithNegativeAge_ThrowsException() {
-        // Arrange
-        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            petService.createPet(
-                1L, "Max", "Dog", "Golden Retriever",
-                -1, 30.0, Pet.WeightType.KG,
-                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
-            );
-        });
-    }
-
-    @Test
-    void testCreatePet_WithZeroWeight_ThrowsException() {
-        // Arrange
-        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
-
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            petService.createPet(
-                1L, "Max", "Dog", "Golden Retriever",
-                3, 0.0, Pet.WeightType.KG,
+                30.0, Pet.WeightType.KG,
                 LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
@@ -155,8 +125,23 @@ class PetServiceTest {
         assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 1L, "Max", "Dog", "Golden Retriever",
-                3, 30.0, Pet.WeightType.KG,
+                30.0, Pet.WeightType.KG,
                 LocalDate.now().plusDays(1), Pet.ActivityLevel.HIGH
+            );
+        });
+    }
+
+    @Test
+    void testCreatePet_WithZeroWeight_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            petService.createPet(
+                1L, "Max", "Dog", "Golden Retriever",
+                0.0, Pet.WeightType.KG,
+                LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
     }
@@ -170,7 +155,7 @@ class PetServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 1L, null, "Dog", "Golden Retriever",
-                3, 30.0, Pet.WeightType.KG,
+                30.0, Pet.WeightType.KG,
                 LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
@@ -186,7 +171,7 @@ class PetServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 1L, "   ", "Dog", "Golden Retriever",
-                3, 30.0, Pet.WeightType.KG,
+                30.0, Pet.WeightType.KG,
                 LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
@@ -202,7 +187,7 @@ class PetServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 1L, "Max", null, "Golden Retriever",
-                3, 30.0, Pet.WeightType.KG,
+                30.0, Pet.WeightType.KG,
                 LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
@@ -218,7 +203,7 @@ class PetServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 1L, "Max", "   ", "Golden Retriever",
-                3, 30.0, Pet.WeightType.KG,
+                30.0, Pet.WeightType.KG,
                 LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
@@ -234,7 +219,7 @@ class PetServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 1L, "Max", "Dog", null,
-                3, 30.0, Pet.WeightType.KG,
+                30.0, Pet.WeightType.KG,
                 LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
@@ -250,7 +235,7 @@ class PetServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 1L, "Max", "Dog", "   ",
-                3, 30.0, Pet.WeightType.KG,
+                30.0, Pet.WeightType.KG,
                 LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
@@ -270,7 +255,7 @@ class PetServiceTest {
         // Act
         Pet result = petService.createPet(
             1L, "Max", "Dog", "Golden Retriever",
-            3, 30.0, Pet.WeightType.KG,
+            30.0, Pet.WeightType.KG,
             null, Pet.ActivityLevel.HIGH
         );
 
@@ -289,7 +274,7 @@ class PetServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             petService.createPet(
                 1L, "Max", "Dog", "Golden Retriever",
-                3, -5.0, Pet.WeightType.KG,
+                -5.0, Pet.WeightType.KG,
                 LocalDate.of(2021, 6, 15), Pet.ActivityLevel.HIGH
             );
         });
@@ -399,7 +384,7 @@ class PetServiceTest {
         Pet result = petService.updatePet(
             1L, 1L,
             "Max Updated", "Dog", "Labrador",
-            4, 32.0, Pet.WeightType.KG,
+            LocalDate.of(2020, 6, 15), 32.0, Pet.WeightType.KG,
             Pet.ActivityLevel.MEDIUM
         );
 
@@ -541,25 +526,28 @@ class PetServiceTest {
     }
 
     @Test
-    void testUpdatePet_WithValidAge_UpdatesAge() {
+    void testUpdatePet_WithValidDateOfBirth_UpdatesDateOfBirthAndAge() {
         // Arrange
         when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
         when(petRepository.save(any(Pet.class))).thenReturn(testPet);
+        LocalDate newDateOfBirth = LocalDate.of(2020, 1, 1);
 
         // Act
         petService.updatePet(
             1L, 1L,
             null, null, null,
-            5, null, null, null
+            newDateOfBirth, null, null, null
         );
 
         // Assert
-        assertEquals(5, testPet.getAge());
+        assertEquals(newDateOfBirth, testPet.getDateOfBirth());
+        // Age is calculated from dateOfBirth
+        assertTrue(testPet.getAge() >= 4); // Should be about 5 years old
         verify(petRepository).save(testPet);
     }
 
     @Test
-    void testUpdatePet_WithNegativeAge_ThrowsException() {
+    void testUpdatePet_WithFutureDateOfBirth_ThrowsException() {
         // Arrange
         when(petRepository.findById(1L)).thenReturn(Optional.of(testPet));
 
@@ -568,10 +556,10 @@ class PetServiceTest {
             petService.updatePet(
                 1L, 1L,
                 null, null, null,
-                -1, null, null, null
+                LocalDate.now().plusDays(1), null, null, null
             );
         });
-        assertEquals("Age cannot be negative", exception.getMessage());
+        assertEquals("Date of birth cannot be in the future", exception.getMessage());
         verify(petRepository, never()).save(any(Pet.class));
     }
 
