@@ -1,28 +1,35 @@
 package com.PetTrackr.PetTrackr.controller;
 
-import com.PetTrackr.PetTrackr.DTO.OwnerDTO;
+import com.PetTrackr.PetTrackr.DTO.ErrorResponse;
+import com.PetTrackr.PetTrackr.DTO.OwnerDTOs.OwnerRegistrationRequest;
+import com.PetTrackr.PetTrackr.DTO.OwnerDTOs.OwnerResponse;
+import com.PetTrackr.PetTrackr.DTO.OwnerDTOs.OwnerUpdateRequest;
 import com.PetTrackr.PetTrackr.entity.Owner;
 import com.PetTrackr.PetTrackr.service.OwnerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * OwnerController handles all owner-related HTTP endpoints.
  * 
  * Design Principles:
- * 1. Use DTOs for request/response (don't expose JPA entities directly)
- * 2. Let service layer handle all business logic and validation
- * 3. Controller is responsible for HTTP concerns only (routing, status codes, content negotiation)
- * 4. All error handling delegated to global exception handler (future implementation)
- * 5. Authorization checks happen in service layer via getPetById() pattern
+ * 1. Separate request/response DTOs for security (password never in responses)
+ * 2. Return detailed error messages in response bodies
+ * 3. Use PATCH for partial updates (null fields ignored)
+ * 4. Validation annotations on DTOs with @Valid
+ * 5. Distinguish between 400 (validation) and 409 (conflict) errors
  * 
  * RESTful Conventions:
  * - POST for creation (201 Created)
  * - GET for retrieval (200 OK)
- * - PUT for full updates (200 OK)
- * - DELETE for removal (204 No Content or 200 OK with response)
+ * - PATCH for partial updates (200 OK)
+ * - DELETE for removal (204 No Content)
  */
 @RestController
 @RequestMapping("/api/owners")
@@ -33,38 +40,80 @@ public class OwnerController {
     public OwnerController(OwnerService ownerService) {
         this.ownerService = ownerService;
     }
+    
+    // ========================================
+    // Exception Handlers
+    // ========================================
+    
+    /**
+     * Handle validation errors from @Valid annotation.
+     * Returns 400 Bad Request with details about which fields failed validation.
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationErrors(MethodArgumentNotValidException ex) {
+        List<String> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                .collect(Collectors.toList());
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Validation Error",
+                "Invalid input data",
+                errors
+        );
+        
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
+    
+    // ========================================
+    // UC-1: Register Owner Account
+    // ========================================
 
     /**
      * Register a new owner account.
      * 
-     * Request: OwnerDTO with name, email, phoneNumber, password
-     * Response: Registered OwnerDTO with generated ID
-     * Error Cases:
-     *   - Email already exists → 409 Conflict
-     *   - Invalid email format → 400 Bad Request
-     *   - Weak password → 400 Bad Request
-     *   - Missing required fields → 400 Bad Request
-     * 
      * HTTP Status Codes:
      *   201 Created - Owner successfully created
-     *   400 Bad Request - Validation error
+     *   400 Bad Request - Validation error (handled by @Valid)
      *   409 Conflict - Email already registered
+     * 
+     * @param request registration data with validation
+     * @return ResponseEntity with created owner (201), validation error (400), or conflict (409)
      */
     @PostMapping("/register")
-    public ResponseEntity<OwnerDTO> registerOwner(@Valid @RequestBody OwnerDTO ownerDTO) {
+    public ResponseEntity<?> registerOwner(@Valid @RequestBody OwnerRegistrationRequest request) {
         try {
-            Owner createdOwner = ownerService.registerOwner(ownerDTO.getEmail(), 
-                                                            ownerDTO.getName(), 
-                                                            ownerDTO.getPhoneNumber(), 
-                                                            ownerDTO.getPassword());
+            Owner createdOwner = ownerService.registerOwner(
+                    request.getEmail(),
+                    request.getName(),
+                    request.getPhoneNumber(),
+                    request.getPassword()
+            );
             
-            // Convert entity to DTO and return 201 Created
-            OwnerDTO responseDTO = convertToDTO(createdOwner);
-            return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+            OwnerResponse response = convertToResponse(createdOwner);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
             
         } catch (IllegalArgumentException e) {
-            // Email already exists or validation failed
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            // Check if it's an email conflict or other validation error
+            if (e.getMessage().contains("already registered") || e.getMessage().contains("already exists")) {
+                ErrorResponse errorResponse = new ErrorResponse(
+                        HttpStatus.CONFLICT.value(),
+                        "Conflict",
+                        e.getMessage()
+                );
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+            }
+            
+            // Other validation errors (weak password, invalid format, etc.)
+            ErrorResponse errorResponse = new ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Bad Request",
+                    e.getMessage()
+            );
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
@@ -75,23 +124,27 @@ public class OwnerController {
     /**
      * Retrieve owner details by ID.
      * 
-     * Note: In a real app with authentication, you'd verify the requesting user
-     * matches the requested owner ID for security. For now, this is open access.
-     * 
      * HTTP Status Codes:
      *   200 OK - Owner found and returned
      *   404 Not Found - Owner doesn't exist
+     * 
+     * @param ownerId the ID of the owner to retrieve
+     * @return ResponseEntity with owner data (200) or error (404)
      */
     @GetMapping("/{ownerId}")
-    public ResponseEntity<OwnerDTO> getOwner(@PathVariable Long ownerId) {
+    public ResponseEntity<?> getOwner(@PathVariable Long ownerId) {
         try {
             Owner owner = ownerService.getOwnerById(ownerId);
-            OwnerDTO responseDTO = convertToDTO(owner);
-            return ResponseEntity.ok(responseDTO);
+            OwnerResponse response = convertToResponse(owner);
+            return ResponseEntity.ok(response);
             
         } catch (IllegalArgumentException e) {
-            // Owner not found
-            return ResponseEntity.notFound().build();
+            ErrorResponse errorResponse = new ErrorResponse(
+                    HttpStatus.NOT_FOUND.value(),
+                    "Not Found",
+                    e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
@@ -102,54 +155,88 @@ public class OwnerController {
     /**
      * Update owner profile (partial update).
      * 
-     * Allows updating name and phoneNumber. Email and password changes would be
-     * handled by separate endpoints for security and audit purposes.
-     * 
-     * Design: Null fields are ignored (partial update pattern) in service, so client only
-     * sends fields they want to update.
+     * All fields are optional - only provided fields are updated.
+     * Use PATCH for partial updates (PUT would require all fields).
      * 
      * HTTP Status Codes:
      *   200 OK - Owner updated and returned
+     *   400 Bad Request - Validation error
      *   404 Not Found - Owner doesn't exist
-     *   400 Bad Request - Invalid data
+     *   409 Conflict - Email already taken by another user
+     * 
+     * @param ownerId the ID of the owner to update
+     * @param request update data (all fields optional)
+     * @return ResponseEntity with updated owner (200) or error
      */
-    @PutMapping("/{ownerId}")
-    public ResponseEntity<OwnerDTO> updateOwner(
+    @PatchMapping("/{ownerId}")
+    public ResponseEntity<?> updateOwner(
             @PathVariable Long ownerId,
-            @Valid @RequestBody OwnerDTO updateDTO) {
+            @Valid @RequestBody OwnerUpdateRequest request) {
         
         try {
             Owner updatedOwner = ownerService.updateOwnerProfile(
-                ownerId,
-                updateDTO.getName(),
-                updateDTO.getPhoneNumber(),
-                updateDTO.getEmail()
+                    ownerId,
+                    request.getName(),
+                    request.getPhoneNumber(),
+                    request.getEmail()
             );
             
-            OwnerDTO responseDTO = convertToDTO(updatedOwner);
-            return ResponseEntity.ok(responseDTO);
+            OwnerResponse response = convertToResponse(updatedOwner);
+            return ResponseEntity.ok(response);
             
         } catch (IllegalArgumentException e) {
-            // Owner not found or validation failed
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
+            // Distinguish between different error types
+            String message = e.getMessage();
+            
+            if (message.contains("not found")) {
+                ErrorResponse errorResponse = new ErrorResponse(
+                        HttpStatus.NOT_FOUND.value(),
+                        "Not Found",
+                        message
+                );
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
             }
-            return ResponseEntity.badRequest().build();
+            
+            if (message.contains("already registered") || message.contains("already exists")) {
+                ErrorResponse errorResponse = new ErrorResponse(
+                        HttpStatus.CONFLICT.value(),
+                        "Conflict",
+                        message
+                );
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+            }
+            
+            // Other validation errors (invalid email format, etc.)
+            ErrorResponse errorResponse = new ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Bad Request",
+                    message
+            );
+            return ResponseEntity.badRequest().body(errorResponse);
         }
     }
 
 
-    // ** HELPER METHOD ** 
+    // ========================================
+    // Helper Methods
+    // ========================================
 
-    // Convert Owner entity to OwnerDTO for API response.
-    private OwnerDTO convertToDTO(Owner owner) {
-        OwnerDTO dto = new OwnerDTO();
-        dto.setId(owner.getId());
-        dto.setName(owner.getName());
-        dto.setEmail(owner.getEmail());
-        dto.setPhoneNumber(owner.getPhoneNumber());
-        // NOTE: Never include password hash in response
-        return dto;
+    /**
+     * Convert Owner entity to OwnerResponse DTO.
+     * 
+     * Note: In a larger application, use a dedicated mapper class (e.g., MapStruct)
+     * for more complex conversions and better maintainability.
+     * 
+     * @param owner the owner entity to convert
+     * @return OwnerResponse with safe fields (never includes password)
+     */
+    private OwnerResponse convertToResponse(Owner owner) {
+        return new OwnerResponse(
+                owner.getId(),
+                owner.getName(),
+                owner.getEmail(),
+                owner.getPhoneNumber()
+        );
     }
 
 }
