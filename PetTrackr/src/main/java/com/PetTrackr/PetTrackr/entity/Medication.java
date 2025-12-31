@@ -5,6 +5,8 @@ import java.time.LocalTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -15,6 +17,17 @@ import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Medication {
+    // Dosage unit enum
+    public enum DosageUnit {
+        MG,         // milligrams
+        ML,         // milliliters
+        TABLETS,
+        CAPSULES,
+        DROPS,
+        UNITS,      // for insulin, etc.
+        TEASPOONS
+    }
+
     // attributes
 
     //primary key will be an ID
@@ -26,7 +39,11 @@ public class Medication {
     private String name;
 
     @Column(nullable = false)
-    private String dosage;
+    private double dosageAmount;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private DosageUnit dosageUnit;
 
     @Column(nullable = false)
     private String frequency;
@@ -50,9 +67,10 @@ public class Medication {
         // empty constructor for JPA
     }
 
-    public Medication(String name, String dosage, String frequency, LocalTime timeToAdminister, LocalDate startDate, LocalDate endDate) {
+    public Medication(String name, double dosageAmount, DosageUnit dosageUnit, String frequency, LocalTime timeToAdminister, LocalDate startDate, LocalDate endDate) {
         this.name = name;
-        this.dosage = dosage;
+        this.dosageAmount = dosageAmount;
+        this.dosageUnit = dosageUnit;
         this.frequency = frequency;
         this.timeToAdminister = timeToAdminister;
         this.startDate = startDate;
@@ -68,12 +86,20 @@ public class Medication {
         this.name = name;
     }
 
-    public String getDosage() {
-        return dosage;
+    public double getDosageAmount() {
+        return dosageAmount;
     }
 
-    public void setDosage(String dosage) {
-        this.dosage = dosage;
+    public void setDosageAmount(double dosageAmount) {
+        this.dosageAmount = dosageAmount;
+    }
+
+    public DosageUnit getDosageUnit() {
+        return dosageUnit;
+    }
+
+    public void setDosageUnit(DosageUnit dosageUnit) {
+        this.dosageUnit = dosageUnit;
     }
 
     public String getFrequency() {

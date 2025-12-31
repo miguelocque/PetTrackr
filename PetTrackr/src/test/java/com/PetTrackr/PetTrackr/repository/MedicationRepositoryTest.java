@@ -1,6 +1,7 @@
 package com.PetTrackr.PetTrackr.repository;
 
 import com.PetTrackr.PetTrackr.entity.Medication;
+import com.PetTrackr.PetTrackr.entity.Medication.DosageUnit;
 import com.PetTrackr.PetTrackr.entity.Owner;
 import com.PetTrackr.PetTrackr.entity.Pet;
 import org.junit.jupiter.api.Test;
@@ -90,7 +91,8 @@ public class MedicationRepositoryTest {
         Pet pet = createAndSavePet();
         Medication med = new Medication();
         med.setName("Ibuprofen");
-        med.setDosage("200mg");
+        med.setDosageAmount(200.0);
+        med.setDosageUnit(DosageUnit.MG);
         med.setFrequency("Twice daily");
         med.setTimeToAdminister(LocalTime.of(9, 0));
         med.setStartDate(LocalDate.now());
@@ -103,7 +105,8 @@ public class MedicationRepositoryTest {
         // Assert
         assertNotNull(saved.getId());
         assertEquals("Ibuprofen", saved.getName());
-        assertEquals("200mg", saved.getDosage());
+        assertEquals(200.0, saved.getDosageAmount());
+        assertEquals(DosageUnit.MG, saved.getDosageUnit());
     }
 
     private Pet createAndSavePet() {
@@ -130,7 +133,8 @@ public class MedicationRepositoryTest {
     private Medication createAndSaveMedication(String name, LocalTime time, Pet pet) {
         Medication med = new Medication();
         med.setName(name);
-        med.setDosage("1 tablet");
+        med.setDosageAmount(1.0);
+        med.setDosageUnit(DosageUnit.TABLETS);
         med.setFrequency("Daily");
         med.setTimeToAdminister(time);
         med.setStartDate(LocalDate.now());

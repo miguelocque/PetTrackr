@@ -1,6 +1,7 @@
 package com.PetTrackr.PetTrackr.service;
 
 import com.PetTrackr.PetTrackr.entity.Medication;
+import com.PetTrackr.PetTrackr.entity.Medication.DosageUnit;
 import com.PetTrackr.PetTrackr.entity.Owner;
 import com.PetTrackr.PetTrackr.entity.Pet;
 import com.PetTrackr.PetTrackr.repository.MedicationRepository;
@@ -61,7 +62,8 @@ public class MedicationServiceTest {
         testMedication = new Medication();
         testMedication.setId(1L);
         testMedication.setName("Heartworm Prevention");
-        testMedication.setDosage("1 tablet");
+        testMedication.setDosageAmount(1.0);
+        testMedication.setDosageUnit(DosageUnit.TABLETS);
         testMedication.setFrequency("Monthly");
         testMedication.setTimeToAdminister(LocalTime.of(9, 0));
         testMedication.setStartDate(LocalDate.of(2024, 1, 1));
@@ -86,14 +88,15 @@ public class MedicationServiceTest {
         // Act
         Medication result = medicationService.addMedicationToPet(
             1L, 1L,
-            "Antibiotics", "250mg", "Twice daily",
+            "Antibiotics", 250.0, DosageUnit.MG, "Twice daily",
             LocalTime.of(8, 0), LocalDate.now(), LocalDate.now().plusDays(7)
         );
 
         // Assert
         assertNotNull(result);
         assertEquals("Antibiotics", result.getName());
-        assertEquals("250mg", result.getDosage());
+        assertEquals(250.0, result.getDosageAmount());
+        assertEquals(DosageUnit.MG, result.getDosageUnit());
         assertEquals("Twice daily", result.getFrequency());
         verify(petService).getPetById(1L, 1L);
         verify(medicationRepository).save(any(Medication.class));
@@ -112,7 +115,7 @@ public class MedicationServiceTest {
         // Act
         Medication result = medicationService.addMedicationToPet(
             1L, 1L,
-            "Daily Vitamin", "1 tablet", "Daily",
+            "Daily Vitamin", 1.0, DosageUnit.TABLETS, "Daily",
             LocalTime.of(8, 0), LocalDate.now(), null
         );
 
@@ -129,7 +132,8 @@ public class MedicationServiceTest {
         when(medicationRepository.save(any(Medication.class))).thenAnswer(invocation -> {
             Medication med = invocation.getArgument(0);
             assertEquals("Antibiotics", med.getName()); // Should be trimmed
-            assertEquals("250mg", med.getDosage());
+            assertEquals(250.0, med.getDosageAmount());
+            assertEquals(DosageUnit.MG, med.getDosageUnit());
             assertEquals("Twice daily", med.getFrequency());
             return med;
         });
@@ -137,7 +141,7 @@ public class MedicationServiceTest {
         // Act
         medicationService.addMedicationToPet(
             1L, 1L,
-            "  Antibiotics  ", "  250mg  ", "  Twice daily  ",
+            "  Antibiotics  ", 250.0, DosageUnit.MG, "  Twice daily  ",
             LocalTime.of(8, 0), LocalDate.now(), null
         );
 
@@ -154,7 +158,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 999L, 1L,
-                "Antibiotics", "250mg", "Twice daily",
+                "Antibiotics", 250.0, DosageUnit.MG, "Twice daily",
                 LocalTime.of(8, 0), LocalDate.now(), null
             );
         });
@@ -171,7 +175,7 @@ public class MedicationServiceTest {
         assertThrows(SecurityException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 999L,
-                "Antibiotics", "250mg", "Twice daily",
+                "Antibiotics", 250.0, DosageUnit.MG, "Twice daily",
                 LocalTime.of(8, 0), LocalDate.now(), null
             );
         });
@@ -187,7 +191,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 1L,
-                null, "250mg", "Twice daily",
+                null, 250.0, DosageUnit.MG, "Twice daily",
                 LocalTime.of(8, 0), LocalDate.now(), null
             );
         });
@@ -203,7 +207,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 1L,
-                "   ", "250mg", "Twice daily",
+                "   ", 250.0, DosageUnit.MG, "Twice daily",
                 LocalTime.of(8, 0), LocalDate.now(), null
             );
         });
@@ -211,7 +215,7 @@ public class MedicationServiceTest {
     }
 
     @Test
-    void testAddMedicationToPet_WithNullDosage_ThrowsException() {
+    void testAddMedicationToPet_WithZeroDosageAmount_ThrowsException() {
         // Arrange
         when(petService.getPetById(1L, 1L)).thenReturn(testPet);
 
@@ -219,15 +223,15 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 1L,
-                "Antibiotics", null, "Twice daily",
+                "Antibiotics", 0.0, DosageUnit.MG, "Twice daily",
                 LocalTime.of(8, 0), LocalDate.now(), null
             );
         });
-        assertEquals("Dosage cannot be empty", exception.getMessage());
+        assertEquals("Dosage amount must be positive", exception.getMessage());
     }
 
     @Test
-    void testAddMedicationToPet_WithBlankDosage_ThrowsException() {
+    void testAddMedicationToPet_WithNegativeDosageAmount_ThrowsException() {
         // Arrange
         when(petService.getPetById(1L, 1L)).thenReturn(testPet);
 
@@ -235,11 +239,27 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 1L,
-                "Antibiotics", "   ", "Twice daily",
+                "Antibiotics", -5.0, DosageUnit.MG, "Twice daily",
                 LocalTime.of(8, 0), LocalDate.now(), null
             );
         });
-        assertEquals("Dosage cannot be empty", exception.getMessage());
+        assertEquals("Dosage amount must be positive", exception.getMessage());
+    }
+
+    @Test
+    void testAddMedicationToPet_WithNullDosageUnit_ThrowsException() {
+        // Arrange
+        when(petService.getPetById(1L, 1L)).thenReturn(testPet);
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            medicationService.addMedicationToPet(
+                1L, 1L,
+                "Antibiotics", 250.0, null, "Twice daily",
+                LocalTime.of(8, 0), LocalDate.now(), null
+            );
+        });
+        assertEquals("Dosage unit cannot be null", exception.getMessage());
     }
 
     @Test
@@ -251,7 +271,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 1L,
-                "Antibiotics", "250mg", null,
+                "Antibiotics", 250.0, DosageUnit.MG, null,
                 LocalTime.of(8, 0), LocalDate.now(), null
             );
         });
@@ -267,7 +287,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 1L,
-                "Antibiotics", "250mg", "   ",
+                "Antibiotics", 250.0, DosageUnit.MG, "   ",
                 LocalTime.of(8, 0), LocalDate.now(), null
             );
         });
@@ -283,7 +303,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 1L,
-                "Antibiotics", "250mg", "Twice daily",
+                "Antibiotics", 250.0, DosageUnit.MG, "Twice daily",
                 null, LocalDate.now(), null
             );
         });
@@ -299,7 +319,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 1L,
-                "Antibiotics", "250mg", "Twice daily",
+                "Antibiotics", 250.0, DosageUnit.MG, "Twice daily",
                 LocalTime.of(8, 0), null, null
             );
         });
@@ -317,7 +337,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.addMedicationToPet(
                 1L, 1L,
-                "Antibiotics", "250mg", "Twice daily",
+                "Antibiotics", 250.0, DosageUnit.MG, "Twice daily",
                 LocalTime.of(8, 0), startDate, endDate
             );
         });
@@ -338,7 +358,7 @@ public class MedicationServiceTest {
         // Act
         Medication result = medicationService.updateMedication(
             1L, 1L,
-            "Updated Med", "500mg", "Once daily",
+            "Updated Med", 500.0, DosageUnit.MG, "Once daily",
             LocalTime.of(10, 0), LocalDate.of(2024, 2, 1), LocalDate.of(2025, 2, 1)
         );
 
@@ -358,7 +378,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.updateMedication(
                 999L, 1L,
-                "Updated Med", "500mg", "Once daily",
+                "Updated Med", 500.0, DosageUnit.MG, "Once daily",
                 LocalTime.of(10, 0), null, null
             );
         });
@@ -376,7 +396,7 @@ public class MedicationServiceTest {
         assertThrows(SecurityException.class, () -> {
             medicationService.updateMedication(
                 1L, 999L,
-                "Updated Med", null, null,
+                "Updated Med", null, null, null,
                 null, null, null
             );
         });
@@ -389,18 +409,20 @@ public class MedicationServiceTest {
         when(medicationRepository.findById(1L)).thenReturn(Optional.of(testMedication));
         when(petService.getPetById(1L, 1L)).thenReturn(testPet);
         when(medicationRepository.save(any(Medication.class))).thenReturn(testMedication);
-        String originalDosage = testMedication.getDosage();
+        double originalDosageAmount = testMedication.getDosageAmount();
+        DosageUnit originalDosageUnit = testMedication.getDosageUnit();
 
         // Act
         medicationService.updateMedication(
             1L, 1L,
-            "New Name", null, null,
+            "New Name", null, null, null,
             null, null, null
         );
 
         // Assert
         assertEquals("New Name", testMedication.getName());
-        assertEquals(originalDosage, testMedication.getDosage()); // Unchanged
+        assertEquals(originalDosageAmount, testMedication.getDosageAmount()); // Unchanged
+        assertEquals(originalDosageUnit, testMedication.getDosageUnit()); // Unchanged
         verify(medicationRepository).save(testMedication);
     }
 
@@ -415,7 +437,7 @@ public class MedicationServiceTest {
         // Act
         medicationService.updateMedication(
             1L, 1L,
-            "   ", null, null,
+            "   ", null, null, null,
             null, null, null
         );
 
@@ -424,22 +446,22 @@ public class MedicationServiceTest {
     }
 
     @Test
-    void testUpdateMedication_WithBlankDosage_DoesNotUpdateDosage() {
+    void testUpdateMedication_WithZeroDosageAmount_DoesNotUpdateDosage() {
         // Arrange
         when(medicationRepository.findById(1L)).thenReturn(Optional.of(testMedication));
         when(petService.getPetById(1L, 1L)).thenReturn(testPet);
         when(medicationRepository.save(any(Medication.class))).thenReturn(testMedication);
-        String originalDosage = testMedication.getDosage();
+        double originalDosageAmount = testMedication.getDosageAmount();
 
         // Act
         medicationService.updateMedication(
             1L, 1L,
-            null, "   ", null,
+            null, 0.0, null, null,
             null, null, null
         );
 
         // Assert
-        assertEquals(originalDosage, testMedication.getDosage()); // Unchanged
+        assertEquals(originalDosageAmount, testMedication.getDosageAmount()); // Unchanged (0 or negative ignored)
     }
 
     @Test
@@ -453,7 +475,7 @@ public class MedicationServiceTest {
         // Act
         medicationService.updateMedication(
             1L, 1L,
-            null, null, "   ",
+            null, null, null, "   ",
             null, null, null
         );
 
@@ -472,7 +494,7 @@ public class MedicationServiceTest {
         // Act
         medicationService.updateMedication(
             1L, 1L,
-            null, null, null,
+            null, null, null, null,
             newTime, null, null
         );
 
@@ -492,7 +514,7 @@ public class MedicationServiceTest {
         // Act
         medicationService.updateMedication(
             1L, 1L,
-            null, null, null,
+            null, null, null, null,
             null, newStartDate, null
         );
 
@@ -512,7 +534,7 @@ public class MedicationServiceTest {
         // Act
         medicationService.updateMedication(
             1L, 1L,
-            null, null, null,
+            null, null, null, null,
             null, null, newEndDate
         );
 
@@ -533,7 +555,7 @@ public class MedicationServiceTest {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             medicationService.updateMedication(
                 1L, 1L,
-                null, null, null,
+                null, null, null, null,
                 null, null, invalidEndDate
             );
         });
@@ -549,19 +571,21 @@ public class MedicationServiceTest {
         when(medicationRepository.save(any(Medication.class))).thenReturn(testMedication);
         
         String originalName = testMedication.getName();
-        String originalDosage = testMedication.getDosage();
+        double originalDosageAmount = testMedication.getDosageAmount();
+        DosageUnit originalDosageUnit = testMedication.getDosageUnit();
         String originalFrequency = testMedication.getFrequency();
 
         // Act
         medicationService.updateMedication(
             1L, 1L,
-            null, null, null,
+            null, null, null, null,
             null, null, null
         );
 
         // Assert
         assertEquals(originalName, testMedication.getName());
-        assertEquals(originalDosage, testMedication.getDosage());
+        assertEquals(originalDosageAmount, testMedication.getDosageAmount());
+        assertEquals(originalDosageUnit, testMedication.getDosageUnit());
         assertEquals(originalFrequency, testMedication.getFrequency());
         verify(medicationRepository).save(testMedication);
     }

@@ -1,6 +1,7 @@
 package com.PetTrackr.PetTrackr.seeder;
 
 import com.PetTrackr.PetTrackr.entity.*;
+import com.PetTrackr.PetTrackr.entity.Medication.DosageUnit;
 import com.PetTrackr.PetTrackr.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -110,7 +111,8 @@ public class DataSeeder implements CommandLineRunner {
         // Create Medications for Max
         Medication med1 = new Medication();
         med1.setName("Heartgard Plus");
-        med1.setDosage("1 tablet");
+        med1.setDosageAmount(1.0);
+        med1.setDosageUnit(DosageUnit.TABLETS);
         med1.setFrequency("Monthly");
         med1.setTimeToAdminister(LocalTime.of(9, 0));
         med1.setStartDate(LocalDate.of(2024, 1, 1));
@@ -120,7 +122,8 @@ public class DataSeeder implements CommandLineRunner {
 
         Medication med2 = new Medication();
         med2.setName("Carprofen");
-        med2.setDosage("50mg");
+        med2.setDosageAmount(50.0);
+        med2.setDosageUnit(DosageUnit.MG);
         med2.setFrequency("Twice daily");
         med2.setTimeToAdminister(LocalTime.of(8, 0));
         med2.setStartDate(LocalDate.of(2024, 12, 1));
@@ -131,7 +134,8 @@ public class DataSeeder implements CommandLineRunner {
         // Create Medication for Buddy
         Medication med3 = new Medication();
         med3.setName("Flea & Tick Prevention");
-        med3.setDosage("1 application");
+        med3.setDosageAmount(1.0);
+        med3.setDosageUnit(DosageUnit.ML);
         med3.setFrequency("Monthly");
         med3.setTimeToAdminister(LocalTime.of(10, 0));
         med3.setStartDate(LocalDate.of(2024, 1, 1));

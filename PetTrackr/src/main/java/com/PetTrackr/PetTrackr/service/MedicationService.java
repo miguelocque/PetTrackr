@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 // implement use case 7 and 8 for medications (add and view medications for a pet)
 import com.PetTrackr.PetTrackr.entity.Medication;
+import com.PetTrackr.PetTrackr.entity.Medication.DosageUnit;
 import com.PetTrackr.PetTrackr.entity.Pet;
 import com.PetTrackr.PetTrackr.repository.MedicationRepository;
 
@@ -24,13 +25,13 @@ public class MedicationService {
         this.petService = petService;
     }
 
-    public Medication addMedicationToPet(Long petId, Long requestingOwnerId, String name, String dosage, String frequency, 
+    public Medication addMedicationToPet(Long petId, Long requestingOwnerId, String name, double dosageAmount, 
+                                        DosageUnit dosageUnit, String frequency, 
                                         java.time.LocalTime timeToAdminister, java.time.LocalDate startDate,
                                         java.time.LocalDate endDate) {
         Pet pet = petService.getPetById(petId, requestingOwnerId); // verify pet exists
         // trim inputs
         name = name != null ? name.trim() : null;
-        dosage = dosage != null ? dosage.trim() : null;
         frequency = frequency != null ? frequency.trim() : null;
 
 
@@ -38,8 +39,11 @@ public class MedicationService {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Medication name cannot be empty");
         }
-        if (dosage == null || dosage.isBlank()) {
-            throw new IllegalArgumentException("Dosage cannot be empty");
+        if (dosageAmount <= 0) {
+            throw new IllegalArgumentException("Dosage amount must be positive");
+        }
+        if (dosageUnit == null) {
+            throw new IllegalArgumentException("Dosage unit cannot be null");
         }
         if (frequency == null || frequency.isBlank()) {
             throw new IllegalArgumentException("Frequency cannot be empty");
@@ -57,7 +61,8 @@ public class MedicationService {
         
         Medication medication = new Medication();
         medication.setName(name);
-        medication.setDosage(dosage);
+        medication.setDosageAmount(dosageAmount);
+        medication.setDosageUnit(dosageUnit);
         medication.setFrequency(frequency);
         medication.setTimeToAdminister(timeToAdminister);
         medication.setPet(pet);
@@ -71,7 +76,8 @@ public class MedicationService {
     }
 
     // update medications for a pet - not listed in use cases but useful for completeness
-    public Medication updateMedication(Long medicationId, Long requestingOwnerId, String name, String dosage, String frequency, 
+    public Medication updateMedication(Long medicationId, Long requestingOwnerId, String name, Double dosageAmount, 
+                                        DosageUnit dosageUnit, String frequency, 
                                         java.time.LocalTime timeToAdminister, java.time.LocalDate startDate,
                                         java.time.LocalDate endDate) {
         // Fetch medication 
@@ -83,15 +89,17 @@ public class MedicationService {
 
         // trim inputs
         name = name != null ? name.trim() : null;
-        dosage = dosage != null ? dosage.trim() : null;
         frequency = frequency != null ? frequency.trim() : null;
 
         // update fields if new values are provided
         if (name != null && !name.isBlank()) {
             medication.setName(name);
         }
-        if (dosage != null && !dosage.isBlank()) {
-            medication.setDosage(dosage);
+        if (dosageAmount != null && dosageAmount > 0) {
+            medication.setDosageAmount(dosageAmount);
+        }
+        if (dosageUnit != null) {
+            medication.setDosageUnit(dosageUnit);
         }
         if (frequency != null && !frequency.isBlank()) {
             medication.setFrequency(frequency);
