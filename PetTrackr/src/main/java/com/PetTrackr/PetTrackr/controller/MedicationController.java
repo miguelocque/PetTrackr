@@ -21,22 +21,21 @@ import java.util.stream.Collectors;
  * Use Cases Implemented:
  *   UC-7: Add Medication to Pet
  *   UC-8: View Pet Medications
- *   Additional: Get single medication, Update medication
- * 
- * Note: No delete endpoint - medical records should be preserved for health history.
- *       If a medication is discontinued, set the endDate instead.
+ *   Additional: Get single medication, Update medication, Delete medication
  * 
  * Design Principles:
  * 1. Nested under pet resource: /api/owners/{ownerId}/pets/{petId}/medications
  * 2. Separate request/response DTOs
  * 3. Authorization checks via service layer (pet must belong to owner)
  * 4. Use PATCH for partial updates
+ * 5. Delete available for removing incorrect entries; use PATCH to set endDate for discontinuing
  * 
  * RESTful Conventions:
- *   POST  /api/owners/{ownerId}/pets/{petId}/medications               - Add medication (201)
- *   GET   /api/owners/{ownerId}/pets/{petId}/medications               - List all medications (200)
- *   GET   /api/owners/{ownerId}/pets/{petId}/medications/{medicationId} - Get single medication (200)
- *   PATCH /api/owners/{ownerId}/pets/{petId}/medications/{medicationId} - Update medication (200)
+ *   POST   /api/owners/{ownerId}/pets/{petId}/medications               - Add medication (201)
+ *   GET    /api/owners/{ownerId}/pets/{petId}/medications               - List all medications (200)
+ *   GET    /api/owners/{ownerId}/pets/{petId}/medications/{medicationId} - Get single medication (200)
+ *   PATCH  /api/owners/{ownerId}/pets/{petId}/medications/{medicationId} - Update medication (200)
+ *   DELETE /api/owners/{ownerId}/pets/{petId}/medications/{medicationId} - Delete medication (204)
  */
 @RestController
 @RequestMapping("/api/owners/{ownerId}/pets/{petId}/medications")
@@ -73,10 +72,6 @@ public class MedicationController {
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
-    // ========================================
-    // UC-7: Add Medication to Pet
-    // ========================================
-
     /**
      * Add a new medication to a pet.
      * 
@@ -85,11 +80,6 @@ public class MedicationController {
      *   400 Bad Request - Validation error
      *   403 Forbidden - Pet doesn't belong to owner
      *   404 Not Found - Pet doesn't exist
-     * 
-     * @param ownerId the owner of the pet
-     * @param petId the pet to add the medication to
-     * @param request medication creation data
-     * @return ResponseEntity with created medication (201) or error
      */
     @PostMapping
     public ResponseEntity<?> addMedication(
@@ -142,10 +132,6 @@ public class MedicationController {
         }
     }
 
-    // ========================================
-    // UC-8: View Pet Medications
-    // ========================================
-
     /**
      * Get all medications for a pet, ordered by time to administer.
      * 
@@ -153,10 +139,6 @@ public class MedicationController {
      *   200 OK - List of medications returned (may be empty)
      *   403 Forbidden - Pet doesn't belong to owner
      *   404 Not Found - Pet doesn't exist
-     * 
-     * @param ownerId the owner of the pet
-     * @param petId the pet to get medications for
-     * @return ResponseEntity with list of medications
      */
     @GetMapping
     public ResponseEntity<?> getMedications(
@@ -190,10 +172,6 @@ public class MedicationController {
         }
     }
 
-    // ========================================
-    // Get Single Medication
-    // ========================================
-
     /**
      * Get details for a specific medication.
      * 
@@ -202,10 +180,6 @@ public class MedicationController {
      *   403 Forbidden - Pet doesn't belong to owner
      *   404 Not Found - Medication or pet doesn't exist
      * 
-     * @param ownerId the owner of the pet
-     * @param petId the pet (for path consistency)
-     * @param medicationId the medication to retrieve
-     * @return ResponseEntity with medication details or error
      */
     @GetMapping("/{medicationId}")
     public ResponseEntity<?> getMedication(
@@ -244,10 +218,6 @@ public class MedicationController {
         }
     }
 
-    // ========================================
-    // Update Medication
-    // ========================================
-
     /**
      * Update an existing medication (partial update).
      * All fields are optional - only provided fields are updated.
@@ -259,12 +229,6 @@ public class MedicationController {
      *   400 Bad Request - Validation error (e.g., endDate before startDate)
      *   403 Forbidden - Pet doesn't belong to owner
      *   404 Not Found - Medication or pet doesn't exist
-     * 
-     * @param ownerId the owner of the pet
-     * @param petId the pet (for path consistency)
-     * @param medicationId the medication to update
-     * @param request update data (all fields optional)
-     * @return ResponseEntity with updated medication or error
      */
     @PatchMapping("/{medicationId}")
     public ResponseEntity<?> updateMedication(
@@ -315,6 +279,45 @@ public class MedicationController {
                     message
             );
             return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    /**
+     * Delete a medication.
+     * 
+     * Use this to remove incorrectly entered medications or clean up old data.
+     * For discontinuing a medication while preserving history, use PATCH to set endDate instead.
+     * 
+     * HTTP Status Codes:
+     *   204 No Content - Medication deleted successfully
+     *   403 Forbidden - Pet doesn't belong to owner
+     *   404 Not Found - Medication or pet doesn't exist
+     */
+    @DeleteMapping("/{medicationId}")
+    public ResponseEntity<?> deleteMedication(
+            @PathVariable Long ownerId,
+            @PathVariable Long petId,
+            @PathVariable Long medicationId) {
+
+        try {
+            medicationService.deleteMedication(medicationId, ownerId);
+            return ResponseEntity.noContent().build();
+
+        } catch (SecurityException e) {
+            ErrorResponse errorResponse = new ErrorResponse(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Forbidden",
+                    e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+
+        } catch (IllegalArgumentException e) {
+            ErrorResponse errorResponse = new ErrorResponse(
+                    HttpStatus.NOT_FOUND.value(),
+                    "Not Found",
+                    e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
