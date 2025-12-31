@@ -394,6 +394,103 @@ public class OwnerServiceTest {
         verify(ownerRepository, never()).save(any(Owner.class));
     }
 
+    @Test
+    void testUpdateOwnerProfile_WithValidNewEmail_UpdatesEmail() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+        when(ownerRepository.existsByEmail("newemail@example.com")).thenReturn(false);
+        when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
+
+        // Act
+        Owner result = ownerService.updateOwnerProfile(1L, null, null, "newemail@example.com");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("newemail@example.com", testOwner.getEmail());
+        verify(ownerRepository).existsByEmail("newemail@example.com");
+        verify(ownerRepository).save(testOwner);
+    }
+
+    @Test
+    void testUpdateOwnerProfile_WithSameEmail_DoesNotCheckUniqueness() {
+        // Arrange - email is same as current
+        testOwner.setEmail("john@example.com");
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+        when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
+
+        // Act
+        Owner result = ownerService.updateOwnerProfile(1L, null, null, "john@example.com");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("john@example.com", testOwner.getEmail());
+        // Should NOT check uniqueness since email didn't change
+        verify(ownerRepository, never()).existsByEmail(anyString());
+        verify(ownerRepository).save(testOwner);
+    }
+
+    @Test
+    void testUpdateOwnerProfile_WithInvalidEmailFormat_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            ownerService.updateOwnerProfile(1L, null, null, "invalid-email");
+        });
+        assertEquals("Email format is invalid", exception.getMessage());
+        verify(ownerRepository, never()).save(any(Owner.class));
+    }
+
+    @Test
+    void testUpdateOwnerProfile_WithEmailAlreadyRegistered_ThrowsException() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+        when(ownerRepository.existsByEmail("taken@example.com")).thenReturn(true);
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            ownerService.updateOwnerProfile(1L, null, null, "taken@example.com");
+        });
+        assertEquals("Email already registered", exception.getMessage());
+        verify(ownerRepository).existsByEmail("taken@example.com");
+        verify(ownerRepository, never()).save(any(Owner.class));
+    }
+
+    @Test
+    void testUpdateOwnerProfile_WithEmailWithSpacesAndUppercase_NormalizesEmail() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+        when(ownerRepository.existsByEmail("newemail@example.com")).thenReturn(false);
+        when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
+
+        // Act
+        Owner result = ownerService.updateOwnerProfile(1L, null, null, "  NEWEMAIL@EXAMPLE.COM  ");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("newemail@example.com", testOwner.getEmail()); // Should be normalized
+        verify(ownerRepository).existsByEmail("newemail@example.com");
+    }
+
+    @Test
+    void testUpdateOwnerProfile_WithAllFields_UpdatesAll() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+        when(ownerRepository.existsByEmail("newemail@example.com")).thenReturn(false);
+        when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
+
+        // Act
+        Owner result = ownerService.updateOwnerProfile(1L, "Jane Doe", "5555555555", "newemail@example.com");
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("Jane Doe", testOwner.getName());
+        assertEquals("5555555555", testOwner.getPhoneNumber());
+        assertEquals("newemail@example.com", testOwner.getEmail());
+        verify(ownerRepository).save(testOwner);
+    }
+
     // ========== verifyPassword Tests ==========
 
     @Test
