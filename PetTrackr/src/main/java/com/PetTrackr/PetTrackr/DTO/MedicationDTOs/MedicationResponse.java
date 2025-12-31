@@ -3,6 +3,8 @@ package com.PetTrackr.PetTrackr.DTO.MedicationDTOs;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.PetTrackr.PetTrackr.entity.Medication.DosageUnit;
+
 /**
  * DTO for returning medication information in API responses.
  * Used when retrieving medication details, including nested in PetDetailResponse.
@@ -12,7 +14,8 @@ public class MedicationResponse {
     
     private Long id;
     private String name;
-    private String dosage;
+    private double dosageAmount;
+    private DosageUnit dosageUnit;
     private String frequency;
     private LocalTime timeToAdminister;
     private LocalDate startDate;
@@ -22,11 +25,12 @@ public class MedicationResponse {
     public MedicationResponse() {
     }
 
-    public MedicationResponse(Long id, String name, String dosage, String frequency,
+    public MedicationResponse(Long id, String name, double dosageAmount, DosageUnit dosageUnit, String frequency,
                               LocalTime timeToAdminister, LocalDate startDate, LocalDate endDate) {
         this.id = id;
         this.name = name;
-        this.dosage = dosage;
+        this.dosageAmount = dosageAmount;
+        this.dosageUnit = dosageUnit;
         this.frequency = frequency;
         this.timeToAdminister = timeToAdminister;
         this.startDate = startDate;
@@ -51,12 +55,20 @@ public class MedicationResponse {
         this.name = name;
     }
 
-    public String getDosage() {
-        return dosage;
+    public double getDosageAmount() {
+        return dosageAmount;
     }
 
-    public void setDosage(String dosage) {
-        this.dosage = dosage;
+    public void setDosageAmount(double dosageAmount) {
+        this.dosageAmount = dosageAmount;
+    }
+
+    public DosageUnit getDosageUnit() {
+        return dosageUnit;
+    }
+
+    public void setDosageUnit(DosageUnit dosageUnit) {
+        this.dosageUnit = dosageUnit;
     }
 
     public String getFrequency() {
