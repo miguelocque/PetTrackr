@@ -537,7 +537,8 @@ public class PetController {
         return new MedicationResponse(
                 medication.getId(),
                 medication.getName(),
-                medication.getDosage(),
+                medication.getDosageAmount(),
+                medication.getDosageUnit(),
                 medication.getFrequency(),
                 medication.getTimeToAdminister(),
                 medication.getStartDate(),
