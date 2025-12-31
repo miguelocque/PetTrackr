@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
  * Use Cases Implemented:
  *   UC-9: Add Vet Visit
  *   UC-10: View Vet Visit History
- *   Additional: Get single visit, Update visit, Delete visit
+ *   Additional: Get single visit, Update visit;
+ *   NOTE: removed delete visit to ensure data integrity.
  * 
  * Design Principles:
  * 1. Nested under pet resource: /api/owners/{ownerId}/pets/{petId}/vet-visits
@@ -34,7 +35,6 @@ import java.util.stream.Collectors;
  *   GET    /api/owners/{ownerId}/pets/{petId}/vet-visits              - List all visits (200)
  *   GET    /api/owners/{ownerId}/pets/{petId}/vet-visits/{visitId}    - Get single visit (200)
  *   PATCH  /api/owners/{ownerId}/pets/{petId}/vet-visits/{visitId}    - Update visit (200)
- *   DELETE /api/owners/{ownerId}/pets/{petId}/vet-visits/{visitId}    - Delete visit (204)
  */
 @RestController
 @RequestMapping("/api/owners/{ownerId}/pets/{petId}/vet-visits")
@@ -267,46 +267,6 @@ public class VetVisitController {
                     message
             );
             return ResponseEntity.badRequest().body(errorResponse);
-        }
-    }
-
-    // ========================================
-    // Delete Vet Visit
-    // ========================================
-
-    /**
-     * Delete a vet visit.
-     * 
-     * HTTP Status Codes:
-     *   204 No Content - Vet visit successfully deleted
-     *   403 Forbidden - Pet doesn't belong to owner
-     *   404 Not Found - Vet visit or pet doesn't exist
-     */
-    @DeleteMapping("/{visitId}")
-    public ResponseEntity<?> deleteVetVisit(
-            @PathVariable Long ownerId,
-            @PathVariable Long petId,
-            @PathVariable Long visitId) {
-
-        try {
-            vetVisitService.deleteVetVisit(visitId, ownerId);
-            return ResponseEntity.noContent().build();
-
-        } catch (SecurityException e) {
-            ErrorResponse errorResponse = new ErrorResponse(
-                    HttpStatus.FORBIDDEN.value(),
-                    "Forbidden",
-                    e.getMessage()
-            );
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
-
-        } catch (IllegalArgumentException e) {
-            ErrorResponse errorResponse = new ErrorResponse(
-                    HttpStatus.NOT_FOUND.value(),
-                    "Not Found",
-                    e.getMessage()
-            );
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         }
     }
 
