@@ -2,7 +2,6 @@ import { NavLink, Route, Routes, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Login from './pages/Login'
 import Home from './pages/Home'
-import FeedingSchedules from './pages/FeedingSchedules'
 import './App.css'
 
 // Protected route wrapper
@@ -36,9 +35,6 @@ function AppLayout() {
           <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
             Home
           </NavLink>
-          <NavLink to="/feeding-schedules" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-            Feeding
-          </NavLink>
         </nav>
         <div className="user-info">
           <span className="user-name">{user?.name}</span>
@@ -49,7 +45,6 @@ function AppLayout() {
       <main className="content">
         <Routes>
           <Route path="/dashboard" element={<Home />} />
-          <Route path="/feeding-schedules" element={<FeedingSchedules />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </main>

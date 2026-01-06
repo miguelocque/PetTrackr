@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getPets, getFeedingSchedules } from '../services/api'
+import AddPetModal from '../components/AddPetModal'
 import './home.css'
 
 function Home() {
@@ -10,12 +11,22 @@ function Home() {
   const [schedule, setSchedule] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
     if (ownerId) {
       loadDashboardData()
     }
   }, [ownerId])
+
+  const petTypeIcon = (type = '') => {
+    const t = type.toLowerCase()
+    if (t.includes('dog')) return '🦴'
+    if (t.includes('cat')) return '🐾'
+    if (t.includes('rabbit')) return '🐰'
+    if (t.includes('bird')) return '🪶'
+    return '🐾'
+  }
 
   const loadDashboardData = async () => {
     try {
@@ -24,9 +35,15 @@ function Home() {
 
       // Fetch all pets for owner
       const petsResponse = await getPets(ownerId)
-      const petsData = petsResponse.data
+      const petsData = petsResponse.data || []
 
       setPets(petsData)
+
+      // If no pets, no need to fetch feeding schedules
+      if (petsData.length === 0) {
+        setSchedule([])
+        return
+      }
 
       // Fetch feeding schedules for all pets and combine
       const schedulePromises = petsData.map((pet) =>
@@ -43,7 +60,18 @@ function Home() {
 
       setSchedule(flatSchedules)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load dashboard data')
+      // Don't show error for 404 (no pets found) - that's expected for new users
+      if (err.response?.status === 404) {
+        setPets([])
+        setSchedule([])
+        return
+      }
+      // Handle auth errors
+      if (err.response?.status === 401) {
+        setError('Session expired. Please refresh and log in again.')
+        return
+      }
+      setError(err.response?.data?.message || 'Unable to connect to server. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -84,10 +112,16 @@ function Home() {
             <p className="subhead">Manage and track your furry friends</p>
           </div>
         </div>
-        <button className="add-btn">+ Add Pet</button>
+        <button className="add-btn" onClick={() => setIsModalOpen(true)}>+ Add Pet</button>
       </div>
 
       {error && <div className="error-banner">{error}</div>}
+
+      <AddPetModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onPetAdded={loadDashboardData}
+      />
 
       <div className="home-layout">
         <section className="pet-column">
@@ -102,21 +136,21 @@ function Home() {
                     className="pet-image"
                     style={{
                       backgroundImage: pet.photoURL
-                        ? `url(${pet.photoURL})`
-                        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                        ? `url(http://localhost:8080/uploads/pet-images/${pet.photoURL})`
+                        : 'linear-gradient(135deg, #dfe7ff 0%, #f2f4f8 100%)'
                     }}
-                  />
+                  >
+                    <span className="pet-chip">{petTypeIcon(pet.type)}</span>
+                  </div>
                   <div className="pet-info">
                     <div className="pet-top">
                       <div>
                         <p className="pet-name">{pet.name}</p>
                         <p className="pet-breed">{pet.breed || pet.type}</p>
                       </div>
-                      <button className="icon-btn" aria-label="Favorite">
-                        ☆
-                      </button>
+                      <span className="pet-age-tag">{calculateAge(pet.dateOfBirth)}</span>
                     </div>
-                    <p className="pet-age">{calculateAge(pet.dateOfBirth)}</p>
+                    <p className="pet-age">{pet.type}</p>
                   </div>
                 </article>
               ))}
