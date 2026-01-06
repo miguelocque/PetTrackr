@@ -105,8 +105,8 @@ public class QRCodeService {
 
         // guidance
         content.append("FOUND THIS PET?\n");
-        content.append("Step-by-step guide:\n");
-        content.append("https://www.humanesociety.org/resources/what-do-if-you-find-lost-pet\n\n");
+        content.append("Visit this guide:\n");
+        content.append("https://www.americanhumane.org/public-education/what-to-if-youve-lost-your-pet/\n");
 
         // and return the built string
         return content.toString();

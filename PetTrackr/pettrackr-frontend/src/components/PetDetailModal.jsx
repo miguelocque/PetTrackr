@@ -11,6 +11,8 @@ function PetDetailModal({ pet, isOpen, onClose }) {
   const [feedingSchedules, setFeedingSchedules] = useState([])
   const [loading, setLoading] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [showQRCode, setShowQRCode] = useState(false)
+  const [qrCodeUrl, setQRCodeUrl] = useState('')
 
   useEffect(() => {
     if (isOpen && pet) {
@@ -64,6 +66,24 @@ function PetDetailModal({ pet, isOpen, onClose }) {
       console.error('Error loading pet details:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGenerateQRCode = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/owners/${user.id}/pets/${pet.id}/qr-code`,
+        { credentials: 'include' }
+      )
+      
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        setQRCodeUrl(url)
+        setShowQRCode(true)
+      }
+    } catch (error) {
+      console.error('Error generating QR code:', error)
     }
   }
 
@@ -138,9 +158,14 @@ function PetDetailModal({ pet, isOpen, onClose }) {
               <h2>{displayPet.name}</h2>
               <p>{displayPet.breed}</p>
             </div>
-            <span className="health-badge" style={{ backgroundColor: healthStatus.color }}>
-              {healthStatus.status}
-            </span>
+            <div className="hero-badges">
+              <button className="lost-btn" onClick={handleGenerateQRCode}>
+                Lost?
+              </button>
+              <span className="health-badge" style={{ backgroundColor: healthStatus.color }}>
+                {healthStatus.status}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -266,6 +291,20 @@ function PetDetailModal({ pet, isOpen, onClose }) {
             onClose()
           }}
         />
+
+        {showQRCode && (
+          <div className="qr-modal-overlay" onClick={() => setShowQRCode(false)}>
+            <div className="qr-modal-content" onClick={(e) => e.stopPropagation()}>
+              <button className="qr-close-btn" onClick={() => setShowQRCode(false)}>✕</button>
+              <h3>Pet Emergency QR Code</h3>
+              <p>Scan this code for pet information</p>
+              {qrCodeUrl && <img src={qrCodeUrl} alt="Pet QR Code" className="qr-code-image" />}
+              <a href={qrCodeUrl} download={`pet_${pet.id}_qr.png`} className="qr-download-btn">
+                Download QR Code
+              </a>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
