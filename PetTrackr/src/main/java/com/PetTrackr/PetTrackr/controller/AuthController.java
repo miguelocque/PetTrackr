@@ -4,6 +4,8 @@ import com.PetTrackr.PetTrackr.DTO.ErrorResponse;
 import com.PetTrackr.PetTrackr.DTO.OwnerDTOs.OwnerResponse;
 import com.PetTrackr.PetTrackr.entity.Owner;
 import com.PetTrackr.PetTrackr.repository.OwnerRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +13,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -26,10 +30,14 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final OwnerRepository ownerRepository;
+    private final SecurityContextRepository securityContextRepository;
 
-    public AuthController(AuthenticationManager authenticationManager, OwnerRepository ownerRepository) {
+    public AuthController(AuthenticationManager authenticationManager, 
+                         OwnerRepository ownerRepository,
+                         SecurityContextRepository securityContextRepository) {
         this.authenticationManager = authenticationManager;
         this.ownerRepository = ownerRepository;
+        this.securityContextRepository = securityContextRepository;
     }
 
     /**
@@ -37,7 +45,9 @@ public class AuthController {
      * Returns owner info on success, 401 on failure.
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials, HttpSession session) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials, 
+                                   HttpServletRequest request, 
+                                   HttpServletResponse response) {
         String email = credentials.get("email");
         String password = credentials.get("password");
         
@@ -58,23 +68,29 @@ public class AuthController {
                     new UsernamePasswordAuthenticationToken(email, password)
             );
 
-            // Set authentication in security context
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            // Create new security context and set authentication
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(auth);
+            SecurityContextHolder.setContext(context);
+            
+            // Explicitly save the security context to the session
+            securityContextRepository.saveContext(context, request, response);
 
             // Fetch owner to return info
             Owner owner = ownerRepository.findByEmail(email).orElseThrow();
 
             // Store owner ID in session for easy access
+            HttpSession session = request.getSession();
             session.setAttribute("ownerId", owner.getId());
 
-            OwnerResponse response = new OwnerResponse(
+            OwnerResponse ownerResponse = new OwnerResponse(
                     owner.getId(),
                     owner.getEmail(),
                     owner.getName(),
                     owner.getPhoneNumber()
             );
 
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(ownerResponse);
 
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorResponse(
