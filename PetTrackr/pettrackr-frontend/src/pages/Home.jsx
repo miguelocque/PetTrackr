@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getPets, getFeedingSchedules } from '../services/api'
 import AddPetModal from '../components/AddPetModal'
+import PetDetailModal from '../components/PetDetailModal'
 import './home.css'
 
 function Home() {
@@ -12,6 +13,8 @@ function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedPet, setSelectedPet] = useState(null)
+  const [isPetDetailOpen, setIsPetDetailOpen] = useState(false)
 
   useEffect(() => {
     if (ownerId) {
@@ -123,6 +126,15 @@ function Home() {
         onPetAdded={loadDashboardData}
       />
 
+      <PetDetailModal
+        pet={selectedPet}
+        isOpen={isPetDetailOpen}
+        onClose={() => {
+          setIsPetDetailOpen(false)
+          setSelectedPet(null)
+        }}
+      />
+
       <div className="home-layout">
         <section className="pet-column">
           <p className="section-title">Your Pets</p>
@@ -131,7 +143,14 @@ function Home() {
           ) : (
             <div className="pet-grid">
               {pets.map((pet) => (
-                <article key={pet.id} className="pet-card">
+                <article
+                  key={pet.id}
+                  className="pet-card"
+                  onClick={() => {
+                    setSelectedPet(pet)
+                    setIsPetDetailOpen(true)
+                  }}
+                >
                   <div
                     className="pet-image"
                     style={{

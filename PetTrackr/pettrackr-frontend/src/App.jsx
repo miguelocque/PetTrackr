@@ -31,11 +31,6 @@ function AppLayout() {
     <div className="shell">
       <header className="topbar">
         <div className="brand">PetTrackr</div>
-        <nav className="nav">
-          <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-            Home
-          </NavLink>
-        </nav>
         <div className="user-info">
           <span className="user-name">{user?.name}</span>
           <button onClick={handleLogout} className="logout-btn">Logout</button>
