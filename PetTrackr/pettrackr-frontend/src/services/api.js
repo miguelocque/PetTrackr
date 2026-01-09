@@ -56,4 +56,27 @@ export const updateFeedingSchedule = (ownerId, petId, scheduleId, payload) =>
 export const deleteFeedingSchedule = (ownerId, petId, scheduleId) =>
   client.delete(`/owners/${ownerId}/pets/${petId}/feeding-schedules/${scheduleId}`)
 
+// Medication endpoints
+export const getMedications = (ownerId, petId) =>
+  client.get(`/owners/${ownerId}/pets/${petId}/medications`)
+
+export const addMedication = (ownerId, petId, payload) =>
+  client.post(`/owners/${ownerId}/pets/${petId}/medications`, payload)
+
+export const updateMedication = (ownerId, petId, medicationId, payload) =>
+  client.patch(`/owners/${ownerId}/pets/${petId}/medications/${medicationId}`, payload)
+
+export const deleteMedication = (ownerId, petId, medicationId) =>
+  client.delete(`/owners/${ownerId}/pets/${petId}/medications/${medicationId}`)
+
+// Vet visit endpoints
+export const getVetVisits = (ownerId, petId) =>
+  client.get(`/owners/${ownerId}/pets/${petId}/vet-visits`)
+
+export const addVetVisit = (ownerId, petId, payload) =>
+  client.post(`/owners/${ownerId}/pets/${petId}/vet-visits`, payload)
+
+export const updateVetVisit = (ownerId, petId, visitId, payload) =>
+  client.patch(`/owners/${ownerId}/pets/${petId}/vet-visits/${visitId}`, payload)
+
 export default client
