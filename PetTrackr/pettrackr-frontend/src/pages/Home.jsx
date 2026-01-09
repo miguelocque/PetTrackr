@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { getPets, getFeedingSchedules } from '../services/api'
+import { getPets, getFeedingSchedules, getMedications } from '../services/api'
 import AddPetModal from '../components/AddPetModal'
 import PetDetailModal from '../components/PetDetailModal'
 import './home.css'
@@ -15,6 +15,7 @@ function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedPet, setSelectedPet] = useState(null)
   const [isPetDetailOpen, setIsPetDetailOpen] = useState(false)
+  const [imageBust, setImageBust] = useState(Date.now())
 
   useEffect(() => {
     if (ownerId) {
@@ -41,27 +42,52 @@ function Home() {
       const petsData = petsResponse.data || []
 
       setPets(petsData)
+      setImageBust(Date.now())
 
-      // If no pets, no need to fetch feeding schedules
+      // If no pets, no need to fetch schedules
       if (petsData.length === 0) {
         setSchedule([])
         return
       }
 
-      // Fetch feeding schedules for all pets and combine
-      const schedulePromises = petsData.map((pet) =>
+      // Fetch feeding schedules for all pets
+      const feedingPromises = petsData.map((pet) =>
         getFeedingSchedules(ownerId, pet.id)
-          .then((res) => res.data.map((s) => ({ ...s, petName: pet.name, petId: pet.id })))
+          .then((res) => res.data.map((s) => ({ 
+            ...s, 
+            petName: pet.name, 
+            petId: pet.id,
+            type: 'feeding'
+          })))
           .catch(() => [])
       )
 
-      const allSchedules = await Promise.all(schedulePromises)
-      const flatSchedules = allSchedules.flat()
+      // Fetch medications for all pets
+      const medicationPromises = petsData.map((pet) =>
+        getMedications(ownerId, pet.id)
+          .then((res) => res.data.map((m) => ({ 
+            ...m, 
+            petName: pet.name, 
+            petId: pet.id,
+            type: 'medication',
+            time: m.timeToAdminister // normalize time field
+          })))
+          .catch(() => [])
+      )
 
-      // Sort by time
-      flatSchedules.sort((a, b) => a.time.localeCompare(b.time))
+      const [allFeeding, allMedications] = await Promise.all([
+        Promise.all(feedingPromises),
+        Promise.all(medicationPromises)
+      ])
 
-      setSchedule(flatSchedules)
+      const flatFeeding = allFeeding.flat()
+      const flatMedications = allMedications.flat()
+
+      // Combine and sort by time
+      const combined = [...flatFeeding, ...flatMedications]
+      combined.sort((a, b) => (a.time || '').localeCompare(b.time || ''))
+
+      setSchedule(combined)
     } catch (err) {
       // Don't show error for 404 (no pets found) - that's expected for new users
       if (err.response?.status === 404) {
@@ -133,6 +159,10 @@ function Home() {
           setIsPetDetailOpen(false)
           setSelectedPet(null)
         }}
+        onPetUpdated={async () => {
+          await loadDashboardData()
+          setImageBust(Date.now())
+        }}
       />
 
       <div className="home-layout">
@@ -155,7 +185,7 @@ function Home() {
                     className="pet-image"
                     style={{
                       backgroundImage: pet.photoURL
-                        ? `url(http://localhost:8080/uploads/pet-images/${pet.photoURL})`
+                        ? `url(http://localhost:8080/uploads/pet-images/${pet.photoURL}?v=${imageBust})`
                         : 'linear-gradient(135deg, #dfe7ff 0%, #f2f4f8 100%)'
                     }}
                   >
@@ -178,22 +208,33 @@ function Home() {
         </section>
 
         <section className="schedule-column">
-          <p className="section-title">Today&apos;s Feeding Schedule</p>
+          <p className="section-title">Today&apos;s Schedule</p>
           {schedule.length === 0 ? (
-            <p className="empty-msg">No feeding schedules yet.</p>
+            <p className="empty-msg">No schedules yet.</p>
           ) : (
             <div className="schedule-list">
               {schedule.map((item) => (
-                <div key={`${item.petId}-${item.id}`} className="schedule-item">
-                  <div className="time-circle">⏰</div>
+                <div 
+                  key={`${item.type}-${item.petId}-${item.id}`} 
+                  className={`schedule-item ${item.type === 'medication' ? 'schedule-medication' : 'schedule-feeding'}`}
+                >
+                  <div className={`time-circle ${item.type === 'medication' ? 'time-circle-medication' : 'time-circle-feeding'}`}>
+                    {item.type === 'medication' ? '💊' : '🍽️'}
+                  </div>
                   <div className="schedule-text">
                     <div className="schedule-row">
                       <span className="time">{formatTime(item.time)}</span>
                       <span className="pet">· {item.petName}</span>
                     </div>
-                    <span className="amount">
-                      {item.quantity} {item.quantityUnit.toLowerCase()} {item.foodType}
-                    </span>
+                    {item.type === 'feeding' ? (
+                      <span className="amount">
+                        {item.quantity} {item.quantityUnit?.toLowerCase()} of {item.foodType.toLowerCase()}
+                      </span>
+                    ) : (
+                      <span className="amount medication-text">
+                        {item.name} - {item.dosageAmount} {item.dosageUnit?.toLowerCase()}
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}

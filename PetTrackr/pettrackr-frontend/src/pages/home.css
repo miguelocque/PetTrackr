@@ -235,6 +235,32 @@
   font-size: 13px;
 }
 
+/* Feeding schedule item styles (orange) */
+.schedule-feeding {
+  border-left: 3px solid #f97316;
+}
+
+.time-circle-feeding {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #ea580c;
+}
+
+/* Medication schedule item styles (purple) */
+.schedule-medication {
+  border-left: 3px solid #a855f7;
+}
+
+.time-circle-medication {
+  background: #faf5ff;
+  border-color: #e9d5ff;
+  color: #9333ea;
+}
+
+.medication-text {
+  color: #7c3aed;
+}
+
 @media (max-width: 980px) {
   .home-layout {
     grid-template-columns: 1fr;
