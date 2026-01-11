@@ -48,7 +48,7 @@ Comprehensive pet detail modal with vet visits, medications, feeding schedules, 
 ![MoreDetailedPetCard](docs/images/MoreDetailedPetCard.png)
 
 ### Lost Pet QR Code
-Emergency QR code for lost-pet flyers with public read-only access to pet information.
+Emergency QR code for publicly available information on what to do when your pet is lost.
 
 ![QRCodeLostPet](docs/images/QRCodeLostPet.png)
 
