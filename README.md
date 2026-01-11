@@ -32,10 +32,41 @@ youtube link here
 
 ## Screenshots
 
-- Dashboard with pet cards and unified schedule sidebar
-- Pet detail modal with vet visits, medications, and feeding schedules
-- Add/edit modals for medications and feeding schedules
-- QR code emergency identification
+### Pet Dashboard
+Dashboard view with pet cards and unified schedule sidebar showing feeding and medication times across all pets.
+
+![PetDashboard](docs/images/PetDashboard.png)
+
+### Individual Pet Card
+Quick overview of a single pet showing name, breed, age, type, and health status.
+
+![IndividualPetCard](docs/images/IndividualPetCard.png)
+
+### Pet Detail View
+Comprehensive pet detail modal with vet visits, medications, feeding schedules, and edit capabilities.
+
+![MoreDetailedPetCard](docs/images/MoreDetailedPetCard.png)
+
+### Lost Pet QR Code
+Emergency QR code for lost-pet flyers with public read-only access to pet information.
+
+![QRCodeLostPet](docs/images/QRCodeLostPet.png)
+
+### View/Edit/Delete Medication
+Functionality to view added Medications, edit them, or delete them.
+
+![ViewEditOrDeleteMedications](docs/images/ViewEditOrDeleteMedications.png)
+
+### View/Edit/Delete Feeding Schedules
+Functionality to view added Feeding Schedules, edit them, or delete them.
+
+![ViewEditOrDeleteFeedingSchedule](docs/images/ViewEditOrDeleteFeedingSchedule.png)
+
+
+### View/Edit Vet Visits
+Vet Visits are unable to be deleted, and only the notes and next visit fields are mutable, to ensure proper medical history for any given pet.
+
+![ViewOrEditVetVisit](docs/images/ViewOrEditVetVisit.png)
 
 ## Features
 
