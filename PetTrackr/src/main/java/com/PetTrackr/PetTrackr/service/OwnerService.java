@@ -136,4 +136,10 @@ public class OwnerService {
         }
         return passwordEncoder.matches(rawPassword, owner.get().getPasswordHash());
     }
+
+    // deletes an owner account and all associated data (pets, vet visits, medications, feeding schedules)
+    public void deleteOwner(Long id) {
+        Owner owner = getOwnerById(id);
+        ownerRepository.delete(owner);
+    }
 }

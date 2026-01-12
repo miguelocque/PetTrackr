@@ -216,6 +216,35 @@ public class OwnerController {
         }
     }
 
+    /**
+     * Delete an owner account and all associated data.
+     * 
+     * DELETE /api/owners/{ownerId}
+     * 
+     * Deletes the owner and cascades to all pets, vet visits, medications, and feeding schedules.
+     * 
+     * Response codes:
+     *   204 No Content - Account successfully deleted
+     *   404 Not Found - Owner doesn't exist
+     * 
+     * @param ownerId the ID of the owner to delete
+     * @return ResponseEntity with 204 No Content or error
+     */
+    @DeleteMapping("/{ownerId}")
+    public ResponseEntity<?> deleteOwner(@PathVariable Long ownerId) {
+        try {
+            ownerService.deleteOwner(ownerId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            ErrorResponse errorResponse = new ErrorResponse(
+                    HttpStatus.NOT_FOUND.value(),
+                    "Not Found",
+                    e.getMessage()
+            );
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+    }
+
 
     // ========================================
     // Helper Methods
