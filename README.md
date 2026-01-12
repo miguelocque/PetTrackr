@@ -6,6 +6,36 @@ A comprehensive full-stack pet management application that helps pet owners trac
 
 As a pet owner, I've witnessed the stress of managing multiple, or even one, pets' health. Medications get forgotten, vet appointments slip through the cracks, and feeding schedules become inconsistent. I built PetTrackr to solve these issues, and to give pet parents a centralized place to manage everything their pets need, so they can focus on what matters: keeping their furry friends healthy, happy, and taken care of.
 
+# Learning Outcomes through PetTrackr
+
+### Spring Boot Entity Relationships and Dependencies
+Building the Owner → Pet → VetVisits/Medications/FeedingSchedules hierarchy taught me how to properly structure unidirectional JPA relationships, meaning that the annotation lives only in the parent entity. I also learned the difference in when to use `@OneToMany` vs `@ManyToOne`, how cascade behavior works, and why relationship design matters for data integrity. A key insight: making VetVisits immutable (only allowing edits to notes and nextVisitDate) demonstrated how database design enforces business rules—medical history must be trustworthy, so you protect it at the entity level, not just the UI.
+
+### Clean REST Controller Endpoints
+Designing 28 REST endpoints across 7 controllers taught me that controllers should be thin routing layers. Business logic belongs in services. By the end, all the controller endpoints are simple: `@PostMapping("/api/pets/{petId}/medications")` routes to a service that handles validation, persistence, and side effects. The payoff: endpoints are easy to read, test, and maintain. I also learned the importance of HTTP semantics—POST for creation, PATCH for partial updates, PUT for complete updates, DELETE for removal—not just CRUD endpoints, but proper REST design.
+
+### Incremental Service Testing
+Instead of writing all tests at the end, I tested services as I was building them. This helped me catch bugs early on and forced me to understand what each service actually needed to do. It also solidified the idea that ONLY services hold business logic, NOT controllers, so testing the services tend to matter the most. This practice prevented the typical end-of-project scramble and resulted in code I'm confident works.
+
+### Frontend Callback Pattern for Real-Time Updates
+The biggest learning on the React side: keeping parent and child components in sync without page reloads. When a user edits a medication in PetDetailModal, the modal needs to refresh the pet's medication list, and the dashboard needs to update its unified schedule, *all without a full page refresh*. I solved this with callbacks: child modals call `onPetUpdated()` → parent refetches data → all components re-render with fresh data. This taught me unidirectional data flow deeply—mutating data down in a child and bubbling changes back up through callbacks keeps state predictable.
+
+# Known Limitations
+
+- **Single Owner per Pet**: Each pet currently belongs to one owner. Future enhancement: support multiple pet parents accessing the same pet.
+- **No Concurrency Handling**: When multiple users try to edit the same pet simultaneously (e.g., both editing a medication), there's no optimistic locking or conflict detection. This is a known risk if multi-user support is added.
+- **No Pagination**: Dashboard and lists load all items at once. Not optimized for owners with 100+ pets.
+- **Session-only Auth**: Credentials stored as HTTP-only cookies. No JWT tokens or API key support for external integrations.
+
+# Future Enhancements and Things I'd Like to Learn
+
+- **Deployment**: Understanding what goes into setting up a real database, how using cloud services such as AWS, and containerization tools like Docker can allow for the application to be accessed through a link rather than having to download very specific technologies in order to run the application.
+
+- **CI/CD**: Understanding what goes into maintaining a deployed application and keeping users hooked into continuing to use the app by introducing new features and ensuring things don't break in the process of creating a new feature.
+
+- **Multi-User Sharing**: Enhance PetTrackr to allow multiple pet parents to access the same pet. This requires solving the concurrency challenge—ensuring they don't accidentally break the application when performing the same action (like editing a Medication) at the same time. 
+
+
 ## Table of Contents
 - [Overview](#overview)
 - [Demo](#demo)
@@ -345,5 +375,15 @@ kill -9 <PID>  # Kill it
 - Ensure backend is running at http://localhost:8080
 - Check `VITE_API_BASE` environment variable
 - Clear browser cache and hard refresh (Cmd+Shift+R / Ctrl+Shift+R)
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+**MIT License summary:**
+- You can use this project for personal and commercial purposes
+- You can modify and distribute it
+- You must include the original license and copyright notice
+- The author provides no warranty
 
 
