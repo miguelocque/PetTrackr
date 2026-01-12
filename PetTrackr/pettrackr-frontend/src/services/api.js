@@ -27,6 +27,12 @@ export const register = (payload) =>
 export const getOwner = (ownerId) =>
   client.get(`/owners/${ownerId}`)
 
+export const updateOwner = (ownerId, payload) =>
+  client.patch(`/owners/${ownerId}`, payload)
+
+export const deleteOwner = (ownerId) =>
+  client.delete(`/owners/${ownerId}`)
+
 // Pet endpoints
 export const getPets = (ownerId) =>
   client.get(`/owners/${ownerId}/pets`)
