@@ -2,6 +2,10 @@
 
 A comprehensive full-stack pet management application that helps pet owners track their pets' health, medications, feeding schedules, and veterinary appointments. Built with Spring Boot and React to demonstrate modern web development practices with emphasis on file handling and QR code generation.
 
+# Why?
+
+As a pet owner, I've witnessed the stress of managing multiple, or even one, pets' health. Medications get forgotten, vet appointments slip through the cracks, and feeding schedules become inconsistent. I built PetTrackr to solve these issues, and to give pet parents a centralized place to manage everything their pets need, so they can focus on what matters: keeping their furry friends healthy, happy, and taken care of.
+
 ## Table of Contents
 - [Overview](#overview)
 - [Demo](#demo)
@@ -119,6 +123,26 @@ Vet Visits are unable to be deleted, and only the notes and next visit fields ar
 - Hibernate ORM
 - H2 database (development); PostgreSQL/MySQL compatible
 - JUnit & Mockito for testing
+
+### Why Spring Boot + React?
+
+**Spring Boot**
+- Relational domain (Owner → Pets → Vet Visits/Medications/Feeding) maps cleanly to JPA/Hibernate; avoids manual SQL joins.
+- REST-first framework: `@GetMapping/@PostMapping/@PatchMapping/@DeleteMapping` made CRUD endpoints concise and consistent.
+- Built-in file handling for pet images (MultipartFile + static resource serving) and session-based auth via Spring Security.
+- Easy environment switching: H2 for local dev, Postgres/MySQL ready with minimal config changes.
+
+**React (with Vite)**
+- Unidirectional data flow keeps dashboard, modals, and panels in sync (child modals call parent callbacks → parent refetches → UI updates everywhere).
+- Component reuse across similar patterns (add/edit/delete for medications, feeding schedules, vet visits) reduces duplication and bugs.
+- Conditional rendering makes the unified schedule clear (orange feeding vs purple meds, different icons/text per type).
+- Fast local DX with Vite + modern React hooks (useState/useEffect) and Context API for auth.
+
+**Why this pairing helps the project**
+- Backend cleanly models the relational data and serves REST/JSON plus static assets (images, QR codes).
+- Frontend delivers responsive, real-time UX without page reloads, with predictable state updates.
+- Both stacks are industry-standard, making the project easier to maintain, learn from, and discuss in interviews.
+
 
 ## Architecture
 
