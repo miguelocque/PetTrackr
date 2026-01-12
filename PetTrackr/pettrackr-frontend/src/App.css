@@ -59,6 +59,21 @@
   font-size: 14px;
 }
 
+.account-btn {
+  background: transparent;
+  border: 1px solid #374151;
+  color: #94a3b8;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.account-btn:hover {
+  background: #1f2937;
+  color: #e2e8f0;
+}
+
 .logout-btn {
   background: transparent;
   border: 1px solid #374151;
