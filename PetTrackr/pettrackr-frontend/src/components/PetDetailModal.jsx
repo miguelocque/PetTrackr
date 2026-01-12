@@ -56,8 +56,11 @@ function PetDetailModal({ pet, isOpen, onClose, onPetUpdated }) {
 
       // Fetch vet visits
       const vetResponse = await fetch(
-        `http://localhost:8080/api/owners/${user.id}/pets/${pet.id}/vet-visits`,
-        { credentials: 'include' }
+        `http://localhost:8080/api/owners/${user.id}/pets/${pet.id}/vet-visits?v=${Date.now()}`,
+        { 
+          credentials: 'include',
+          cache: 'no-cache'
+        }
       )
       if (vetResponse.ok) {
         const vetData = await vetResponse.json()
@@ -118,7 +121,9 @@ function PetDetailModal({ pet, isOpen, onClose, onPetUpdated }) {
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Not scheduled'
-    const date = new Date(dateString)
+    // Parse as local date to avoid timezone issues
+    const [year, month, day] = dateString.split('-')
+    const date = new Date(year, month - 1, day)
     return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
   }
 
@@ -163,6 +168,22 @@ function PetDetailModal({ pet, isOpen, onClose, onPetUpdated }) {
     }
   }
 
+  const handleDeletePet = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/owners/${user.id}/pets/${pet.id}`,
+        { method: 'DELETE', credentials: 'include' }
+      )
+      if (response.ok) {
+        setDeleteConfirm(null)
+        onClose()
+        if (onPetUpdated) onPetUpdated()
+      }
+    } catch (error) {
+      console.error('Error deleting pet:', error)
+    }
+  }
+
   const getHealthStatus = () => {
     // Logic to determine health status based on recent vet visits
     const recentVisit = vetVisits.sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate))[0]
@@ -192,7 +213,11 @@ function PetDetailModal({ pet, isOpen, onClose, onPetUpdated }) {
           <button className="action-btn" aria-label="Edit" onClick={() => setIsEditOpen(true)}>
             ✏️
           </button>
-          <button className="action-btn" aria-label="Delete">
+          <button 
+            className="action-btn" 
+            aria-label="Delete"
+            onClick={() => setDeleteConfirm({ type: 'pet', id: pet.id, name: displayPet.name })}
+          >
             🗑️
           </button>
           <button className="action-btn close-btn" onClick={onClose}>
@@ -454,9 +479,17 @@ function PetDetailModal({ pet, isOpen, onClose, onPetUpdated }) {
                       .map((visit) => (
                         <div key={visit.id} className="vet-visit-card">
                           <div className="vet-visit-date">
-                            <span className="visit-day">{new Date(visit.visitDate).getDate()}</span>
+                            <span className="visit-day">
+                              {(() => {
+                                const [year, month, day] = visit.visitDate.split('-')
+                                return new Date(year, month - 1, day).getDate()
+                              })()}
+                            </span>
                             <span className="visit-month">
-                              {new Date(visit.visitDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                              {(() => {
+                                const [year, month, day] = visit.visitDate.split('-')
+                                return new Date(year, month - 1, day).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                              })()}
                             </span>
                           </div>
                           <div className="vet-visit-details">
@@ -659,8 +692,12 @@ function PetDetailModal({ pet, isOpen, onClose, onPetUpdated }) {
         {deleteConfirm && (
           <div className="delete-confirm-overlay" onClick={() => setDeleteConfirm(null)}>
             <div className="delete-confirm-modal" onClick={(e) => e.stopPropagation()}>
-              <h3>Delete {deleteConfirm.type === 'feeding' ? 'Feeding Schedule' : 'Medication'}?</h3>
-              <p>Are you sure you want to delete &quot;{deleteConfirm.name}&quot;? This cannot be undone.</p>
+              <h3>Delete {deleteConfirm.type === 'pet' ? 'Pet' : deleteConfirm.type === 'feeding' ? 'Feeding Schedule' : 'Medication'}?</h3>
+              <p>
+                Are you sure you want to delete &quot;{deleteConfirm.name}&quot;?
+                {deleteConfirm.type === 'pet' && ' This will also delete all vet visits, medications, and feeding schedules.'}
+                {' '}This cannot be undone.
+              </p>
               <div className="delete-confirm-actions">
                 <button className="delete-cancel-btn" onClick={() => setDeleteConfirm(null)}>
                   Cancel
@@ -668,7 +705,9 @@ function PetDetailModal({ pet, isOpen, onClose, onPetUpdated }) {
                 <button 
                   className="delete-confirm-btn"
                   onClick={() => {
-                    if (deleteConfirm.type === 'feeding') {
+                    if (deleteConfirm.type === 'pet') {
+                      handleDeletePet()
+                    } else if (deleteConfirm.type === 'feeding') {
                       handleDeleteFeedingSchedule(deleteConfirm.id)
                     } else {
                       handleDeleteMedication(deleteConfirm.id)
