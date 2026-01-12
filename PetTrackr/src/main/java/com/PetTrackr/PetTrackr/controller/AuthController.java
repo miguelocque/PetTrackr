@@ -85,8 +85,8 @@ public class AuthController {
 
             OwnerResponse ownerResponse = new OwnerResponse(
                     owner.getId(),
-                    owner.getEmail(),
                     owner.getName(),
+                    owner.getEmail(),
                     owner.getPhoneNumber()
             );
 
@@ -140,8 +140,8 @@ public class AuthController {
 
         OwnerResponse response = new OwnerResponse(
                 owner.getId(),
-                owner.getEmail(),
                 owner.getName(),
+                owner.getEmail(),
                 owner.getPhoneNumber()
         );
 
