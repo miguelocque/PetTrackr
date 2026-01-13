@@ -458,6 +458,59 @@ public class OwnerServiceTest {
     }
 
     @Test
+    void testUpdateOwnerProfile_WithEmailTrimAndLowercase_NormalizesEmail() {
+        // Arrange
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+        when(ownerRepository.existsByEmail("newemail@example.com")).thenReturn(false);
+        when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
+
+        // Act
+        ownerService.updateOwnerProfile(1L, null, null, "  NewEmail@EXAMPLE.COM  ");
+
+        // Assert
+        verify(ownerRepository).existsByEmail("newemail@example.com");
+        assertEquals("newemail@example.com", testOwner.getEmail());
+    }
+
+    @Test
+    void testUpdateOwnerProfile_WithBlankEmail_DoesNotUpdateEmail() {
+        // Arrange
+        String originalEmail = testOwner.getEmail();
+        when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
+        when(ownerRepository.save(any(Owner.class))).thenReturn(testOwner);
+
+        // Act
+        ownerService.updateOwnerProfile(1L, "Jane", null, "   ");
+
+        // Assert
+        assertEquals(originalEmail, testOwner.getEmail()); // Email should not change
+        verify(ownerRepository, never()).existsByEmail(anyString());
+    }
+
+    @Test
+    void testRegisterOwner_WithPhoneNumberTrim_Success() {
+        // Arrange
+        String email = "test@example.com";
+        String name = "Test User";
+        String phoneNumber = "  9876543210  ";
+        String rawPassword = "password123";
+
+        when(ownerRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(rawPassword)).thenReturn("hashed");
+        when(ownerRepository.save(any(Owner.class))).thenAnswer(invocation -> {
+            Owner owner = invocation.getArgument(0);
+            assertEquals("9876543210", owner.getPhoneNumber()); // Should be trimmed
+            return owner;
+        });
+
+        // Act
+        ownerService.registerOwner(email, name, phoneNumber, rawPassword);
+
+        // Assert - verify trimmed phone was used
+        verify(ownerRepository).save(any(Owner.class));
+    }
+
+    @Test
     void testUpdateOwnerProfile_WithEmailWithSpacesAndUppercase_NormalizesEmail() {
         // Arrange
         when(ownerRepository.findById(1L)).thenReturn(Optional.of(testOwner));
@@ -537,5 +590,39 @@ public class OwnerServiceTest {
         assertFalse(result);
         verify(ownerRepository).findByEmail("nonexistent@example.com");
         verify(passwordEncoder, never()).matches(anyString(), anyString());
+    }
+
+    // ========== deleteOwner Tests ==========
+
+    @Test
+    void testDeleteOwner_WithValidId_Success() {
+        // Arrange
+        Long ownerId = 1L;
+        when(ownerRepository.findById(ownerId)).thenReturn(Optional.of(testOwner));
+        doNothing().when(ownerRepository).delete(testOwner);
+
+        // Act
+        ownerService.deleteOwner(ownerId);
+
+        // Assert
+        verify(ownerRepository).findById(ownerId);
+        verify(ownerRepository).delete(testOwner);
+    }
+
+    @Test
+    void testDeleteOwner_WithNonexistentId_ThrowsException() {
+        // Arrange
+        Long ownerId = 999L;
+        when(ownerRepository.findById(ownerId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> ownerService.deleteOwner(ownerId)
+        );
+
+        assertEquals("Owner not found with ID: 999", exception.getMessage());
+        verify(ownerRepository).findById(ownerId);
+        verify(ownerRepository, never()).delete(any(Owner.class));
     }
 }
