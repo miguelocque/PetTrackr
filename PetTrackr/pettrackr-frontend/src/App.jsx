@@ -35,7 +35,7 @@ function AppLayout() {
       <header className="topbar">
         <div className="brand">PetTrackr</div>
         <div className="user-info">
-          <span className="user-name">{user?.email}</span>
+          <span className="user-name">{user.name}</span>
           <button onClick={() => setIsAccountOpen(true)} className="account-btn" title="Account Settings">
             ⚙️
           </button>
