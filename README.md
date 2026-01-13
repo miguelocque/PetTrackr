@@ -62,7 +62,7 @@ PetTrackr is a full-stack pet management platform that consolidates all essentia
 
 ## Demo
 
-youtube link here
+Follow this link for a video demo: https://youtu.be/WNb3QTwiQfQ
 
 ## Screenshots
 
@@ -337,20 +337,29 @@ PetTrackr/
 
 5. **Session-based Auth:** Uses HTTP-only cookies to maintain login state across requests; credentials sent automatically.
 
-### Testing
+### Test Coverage
 
-**Backend:**
-If on Windows:
-```bash
-./mvnw test
-```
+**Overall Coverage:** 74% branch coverage across the entire application
 
-If on MacOS:
-```bash
-mvn test
-```
+**Service Layer:** 97% branch coverage (236/242 branches) — the business logic layer where core functionality lives is comprehensively tested with JUnit and Mockito.
 
-Runs JUnit tests in `src/test/java/`.
+**Coverage Breakdown by Package:**
+- **Services** (business logic): 97% branch coverage: all core functionality thoroughly tested
+- **Config** (Spring configuration): 88% instruction coverage
+- **Entities** (JPA models): 75% instruction coverage
+- **Controllers** (REST endpoints): 0% branch coverage — integration tests not implemented for this project.
+
+The service layer's 97% coverage demonstrates that the application's critical business logic—pet management, medication tracking, vet visit scheduling, and feeding schedules—is thoroughly tested and reliable. The lower overall percentage reflects untested controller endpoints and DTO classes, which are thin routing/data layers without complex logic.
+
+**Key Tested Flows:**
+- Pet CRUD operations with validation
+- Vet visit creation with immutability enforcement
+- Medication scheduling with date range validation
+- Feeding schedule management
+- Owner account operations (registration, profile updates, deletion)
+- Authorization checks ensuring owners can only access their own data
+
+Run `mvn test` to execute the full test suite with coverage reporting via JaCoCo.
 
 **Frontend:**
 ```bash
