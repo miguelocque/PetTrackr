@@ -12,7 +12,7 @@ As a pet owner, I've witnessed the stress of managing multiple, or even one, pet
 Building the Owner → Pet → VetVisits/Medications/FeedingSchedules hierarchy taught me how to properly structure unidirectional JPA relationships, meaning that the annotation lives only in the parent entity. I also learned the difference in when to use `@OneToMany` vs `@ManyToOne`, how cascade behavior works, and why relationship design matters for data integrity. A key insight: making VetVisits immutable (only allowing edits to notes and nextVisitDate) demonstrated how database design enforces business rules—medical history must be trustworthy, so you protect it at the entity level, not just the UI.
 
 ### Clean REST Controller Endpoints
-Designing 28 REST endpoints across 7 controllers taught me that controllers should be thin routing layers. Business logic belongs in services. By the end, all the controller endpoints are simple: `@PostMapping("/api/pets/{petId}/medications")` routes to a service that handles validation, persistence, and side effects. The payoff: endpoints are easy to read, test, and maintain. I also learned the importance of HTTP semantics—POST for creation, PATCH for partial updates, PUT for complete updates, DELETE for removal—not just CRUD endpoints, but proper REST design.
+Designing 29 REST endpoints across 7 controllers taught me that controllers should be thin routing layers. Business logic belongs in services. By the end, all the controller endpoints are simple: `@PostMapping("/api/pets/{petId}/medications")` routes to a service that handles validation, persistence, and side effects. The payoff: endpoints are easy to read, test, and maintain. I also learned the importance of HTTP semantics—POST for creation, PATCH for partial updates, PUT for complete updates, DELETE for removal—not just CRUD endpoints, but proper REST design.
 
 ### Incremental Service Testing
 Instead of writing all tests at the end, I tested services as I was building them. This helped me catch bugs early on and forced me to understand what each service actually needed to do. It also solidified the idea that ONLY services hold business logic, NOT controllers, so testing the services tend to matter the most. This practice prevented the typical end-of-project scramble and resulted in code I'm confident works.
@@ -251,6 +251,7 @@ Frontend starts at `http://localhost:5173`. It proxies API calls to `http://loca
 - `POST /auth/logout` — Log out
 - `GET /auth/me` — Get current user
 - `POST /owners/register` — Register new owner
+- `DELETE /owners/{ownerId}` - Deletes an owner
 
 **Pets:**
 - `GET /owners/{ownerId}/pets` — List all pets
